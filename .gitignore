@@ -1,0 +1,41 @@
+# Dart / Flutter SDK ignores
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Packages & dependencies
+.packages
+.pub/
+.pub-cache/
+
+# Build outputs
+build/
+out/
+
+# IDE settings
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+
+# Coverage & test reports
+coverage/
+test/.dart_tool/
+.dart_tool/
+
+# Generated docs
+doc/api/
+
+# Mac / Linux / Windows junk
+.DS_Store
+*.swp
+Thumbs.db
+
+# If publishing to pub.dev, you might also want to ignore example build artifacts
+example/.dart_tool/
+example/build/

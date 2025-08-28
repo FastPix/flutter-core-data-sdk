@@ -1,0 +1,39 @@
+name: fastpix_flutter_core_data
+description: A comprehensive Flutter SDK for video player analytics and event tracking, designed to provide detailed insights into video playback behavior and user engagement metrics.
+version: 1.0.0
+homepage: https://www.fastpix.io/
+repository: https://github.com/FastPix/flutter-core-data-sdk
+issue_tracker: https://github.com/FastPix/flutter-core-data-sdk/issues
+
+topics:
+  - analytics
+  - video
+  - player
+  - tracking
+  - metrics
+  - flutter
+  - sdk
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+# Add regular dependencies here.
+dependencies:
+  device_info_plus: ^11.4.0
+  flutter:
+    sdk: flutter
+  http: ^1.4.0
+  uuid: ^4.5.1
+  logging: ^1.2.0
+  synchronized: ^3.1.0
+  connectivity_plus: ^6.1.4
+
+dev_dependencies:
+  lints: ^5.0.0
+  test: ^1.24.0
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
