@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:fastpix_flutter_core_data/flutter_core_data_sdk.dart';
+import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
 import '../dispatcher/event_dispatcher.dart';
 
 class AppLifecycleHandler with WidgetsBindingObserver {

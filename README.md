@@ -32,7 +32,7 @@ flutter pub get
 Here's a minimal example to get you started:
 
 ```dart
-import 'package:fastpix_flutter_core_data/flutter_core_data_sdk.dart';
+import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
 
 void main() {
   // Configure the SDK

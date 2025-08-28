@@ -1,4 +1,4 @@
-import '../../flutter_core_data_sdk.dart';
+import '../../fastpix_flutter_core_data.dart';
 
 class MetricsConfiguration {
   final PlayerData? playerData;

@@ -1,13 +1,12 @@
 import 'package:fastpix_flutter_core_data/src/event/ended_event.dart';
 import 'package:fastpix_flutter_core_data/src/model/change_track.dart';
 import 'package:fastpix_flutter_core_data/src/util/view_watch_time_counter.dart';
-import '../flutter_core_data_sdk.dart';
+import '../fastpix_flutter_core_data.dart';
 import 'event/event_exposer.dart';
 import 'metrics/metrics_state_manager.dart';
 import 'services/service_locator.dart';
 import 'services/configuration/configuration_service.dart';
 import 'lifecycle/app_lifecycle_handler.dart';
-import 'util/helper.dart';
 
 class FastPixMetrics {
   final MetricsConfiguration? metricsConfiguration;
@@ -15,7 +14,6 @@ class FastPixMetrics {
   late final EventDispatcher _eventDispatcher;
   final MetricsStateManager _metricsStateManager;
   final ConfigurationService _configService;
-  late final AppLifecycleHandler _lifecycleHandler;
   ViewWatchTimeCounter? _viewWatchTimeCounter;
 
   FastPixMetrics._builder(FastPixMetricsBuilder builder)
@@ -24,7 +22,6 @@ class FastPixMetrics {
         _metricsStateManager = MetricsStateManager(),
         _configService = ServiceLocator().configurationService {
     _eventDispatcher = EventDispatcher();
-    _lifecycleHandler = AppLifecycleHandler();
     ViewWatchTimeCounter.viewWatchTime = 0;
     // Initialize ConfigurationService for new video session
     _configService.initializeForNewVideoSession();
@@ -191,9 +188,6 @@ class DisposeManager {
       // Step 2: Reset all singleton services
       final serviceLocator = ServiceLocator();
       await serviceLocator.dispose();
-
-      // Step 3: Reset ConfigurationHelper singleton
-      ConfigurationHelper.instance.reset();
 
       // Step 4: Force reset metrics state manager
       MetricsStateManager.forceResetForVideoSwitch();

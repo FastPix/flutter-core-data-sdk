@@ -3,7 +3,7 @@
 /// More dartdocs go here.
 library;
 
-export 'src/flutter_core_data_sdk_base.dart';
+export 'src/fastpix_flutter_core_data_base.dart';
 export 'src/model/custom_data.dart';
 export 'src/event/player_event.dart';
 export 'src/model/matrics_configuration.dart';

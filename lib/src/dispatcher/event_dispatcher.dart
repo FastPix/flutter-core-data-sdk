@@ -1,14 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:collection';
-import 'dart:isolate';
-import 'package:fastpix_flutter_core_data/flutter_core_data_sdk.dart';
+import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
 import 'package:http/http.dart' as http;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:fastpix_flutter_core_data/src/logger/metrics_logger.dart';
 import 'package:fastpix_flutter_core_data/src/services/service_locator.dart';
 import 'package:fastpix_flutter_core_data/src/services/configuration/configuration_service.dart';
-import 'package:fastpix_flutter_core_data/src/services/session/session_service.dart';
 import 'package:fastpix_flutter_core_data/src/event/pulse_event.dart';
 import 'package:fastpix_flutter_core_data/src/util/utils.dart';
 
@@ -24,14 +22,12 @@ class SessionExpiredException implements Exception {
 class EventDispatcher {
   EventDispatcher() {
     _configService = ServiceLocator().configurationService;
-    _sessionService = ServiceLocator().sessionService;
     _startTimer();
     _initializeNetworkMonitoring();
   }
 
   // Lock mechanism to prevent race conditions
   Completer<void>? _currentLock;
-  bool _isLocked = false;
 
   final Duration batchInterval = const Duration(seconds: 10);
   int maxBatchSize = 200;
@@ -42,7 +38,6 @@ class EventDispatcher {
 
   // final EventDispatcherConfig config;
   late ConfigurationService _configService;
-  late SessionService _sessionService;
 
   // Add fields for deduplication and pulse event scheduling
   Map<String, String?>? _lastSentEvent;
@@ -198,37 +193,6 @@ class EventDispatcher {
     } else {
       _log('Pulse event already scheduled, skipping duplicate request');
     }
-  }
-
-  bool _isDuplicateEvent(Map<String, dynamic> newEvent) {
-    if (_lastSentEvent == null) return false;
-
-    // Check if this is the same event type and playback time as the last sent
-    final isSameAsLast = newEvent['evna'] == _lastSentEvent?['evna'] &&
-        newEvent['plphti'] == _lastSentEvent?['plphti'];
-
-    if (isSameAsLast) return true;
-
-    // Create a unique key for this event to check against recent events
-    final eventKey =
-        '${newEvent['evna']}_${newEvent['plphti']}_${newEvent['vid'] ?? ''}';
-
-    // Check if we've seen this exact event recently
-    if (_recentEvents.contains(eventKey)) {
-      return true;
-    }
-
-    // Add to recent events for future duplicate detection
-    _recentEvents.add(eventKey);
-
-    // Keep only the last 100 events to prevent memory issues
-    if (_recentEvents.length > 100) {
-      final oldestEvents =
-          _recentEvents.take(_recentEvents.length - 100).toSet();
-      _recentEvents.removeAll(oldestEvents);
-    }
-
-    return false;
   }
 
   void _cancelPulseTimer() {
@@ -422,8 +386,6 @@ class EventDispatcher {
       _recentEvents.clear();
       _lastSentEvent = null;
 
-      // Clear lock state
-      _isLocked = false;
       _currentLock?.complete();
       _currentLock = null;
       _isWaitingForNetwork = false;

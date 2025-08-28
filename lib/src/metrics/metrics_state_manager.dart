@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' show max, min;
 import 'package:fastpix_flutter_core_data/src/util/view_watch_time_counter.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:fastpix_flutter_core_data/src/logger/metrics_logger.dart';
@@ -15,7 +14,6 @@ class MetricsStateManager {
 
   // Event tracking
   DateTime? _lastPlayTimestamp;
-  DateTime? _lastPauseTimestamp;
   DateTime? _lastSeekTimestamp;
   DateTime? _lastBufferStartTimestamp;
 
@@ -44,7 +42,6 @@ class MetricsStateManager {
 
   // Event validation
   bool _isPlaying = false;
-  bool _isSeeking = false;
   bool _isBuffering = false;
 
   // Getters for metrics
@@ -92,7 +89,6 @@ class MetricsStateManager {
   Future<void> reset() async {
     await _lock.synchronized(() {
       _lastPlayTimestamp = null;
-      _lastPauseTimestamp = null;
       _lastSeekTimestamp = null;
       _lastBufferStartTimestamp = null;
 
@@ -119,7 +115,6 @@ class MetricsStateManager {
       _viewTotalDownscaling = 0.0;
 
       _isPlaying = false;
-      _isSeeking = false;
       _isBuffering = false;
 
       MetricsLogger.logEvent('MetricsStateManager', {
@@ -143,7 +138,6 @@ class MetricsStateManager {
     _isEnhancedSeeking = false;
     _seekStartPosition = 0.0;
     _isPlaying = false;
-    _isSeeking = false;
     _isBuffering = false;
 
     MetricsLogger.logEvent('MetricsStateManager', {
@@ -218,8 +212,6 @@ class MetricsStateManager {
         MetricsLogger.logError('Invalid pause event - not playing');
         return;
       }
-
-      _lastPauseTimestamp = timestamp;
       _isPlaying = false;
 
       if (_lastPlayTimestamp != null) {

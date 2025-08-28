@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:fastpix_flutter_core_data/flutter_core_data_sdk.dart';
+import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
 import 'package:fastpix_flutter_core_data/src/model/change_track.dart';
 import 'package:uuid/uuid.dart';
 import 'configuration_state.dart';

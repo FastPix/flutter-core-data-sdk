@@ -1,7 +1,6 @@
 
 import '../metrics/metrics_state_manager.dart';
 import '../services/service_locator.dart';
-import '../util/device_info_helper.dart';
 import 'event_base.dart';
 
 class PlayEvent extends BaseEvent {
@@ -65,7 +64,6 @@ class PlayEvent extends BaseEvent {
     final configService = ServiceLocator().configurationService;
     final metricsManager = MetricsStateManager();
     final baseData = await BaseEvent.getBaseEventData(configService);
-    final deviceInfo = await DeviceInfoHelper.getDeviceInfo();
     final videoData = configService.videoData;
     // Update metrics state
     await metricsManager.handlePlay(

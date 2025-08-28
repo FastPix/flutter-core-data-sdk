@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:fastpix_flutter_core_data/flutter_core_data_sdk.dart';
+import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
 import 'package:fastpix_flutter_core_data/src/model/change_track.dart';
 
-@immutable
+
 class ConfigurationState {
   final PlayerData? playerData;
   final VideoData? videoData;
@@ -176,4 +176,39 @@ class ConfigurationState {
         other.changeTrack == changeTrack &&
         other.viewMaxUpScalePercentage == viewMaxUpScalePercentage;
   }
+
+  @override
+  int get hashCode => Object.hashAll([
+    playerData,
+    videoData,
+    viewerId,
+    playerObserver,
+    workSpaceId,
+    beaconUrl,
+    baseURL,
+    viewPlayTimeStamp,
+    viewPauseTimeStamp,
+    viewerTimeStamp,
+    viewSeekCount,
+    sequenceCounter,
+    seekMap,
+    viewRebufferCount,
+    bufferStartedTimeStamp,
+    lastPlayHeadTime,
+    viewTotalContentPlayBackTime,
+    viewTotalDownScaling,
+    viewTotalUpScaling,
+    playerId,
+    viewMaxDownScalePercentage,
+    viewReBufferDuration,
+    viewId,
+    isViewTimeToFirstFrameSent,
+    isSeeking,
+    viewWatchTime,
+    customData,
+    isViewBeginCalled,
+    connectionType,
+    changeTrack,
+    viewMaxUpScalePercentage,
+  ]);
 }
