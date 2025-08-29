@@ -32,7 +32,9 @@ class FastPixMetrics {
       _configService.updateWorkSpaceId(metricsConfiguration!.workspaceId!);
     }
     if (metricsConfiguration?.beaconUrl != null) {
-      _configService.updateBeaconUrl(metricsConfiguration!.beaconUrl!);
+      _configService.updateBeaconUrl(url: metricsConfiguration!.beaconUrl!);
+    } else {
+      _configService.updateBeaconUrl();
     }
     if (metricsConfiguration?.customData != null) {
       _configService.updateCustomData(metricsConfiguration!.customData!);

@@ -5,13 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] - 2025-12-29
+## [1.0.2] - 2025-08-29
+
+### Added
+- Made beacon url non mandatory and updated with production one
+
+## [1.0.1] - 2025-08-29
 
 ### Added
 - Exposed Error model import via the library entrypoint, allowing direct access without separate imports.
 
 
-## [1.0.0] - 2025-12-28
+## [1.0.0] - 2025-08-28
 
 ### Added
 - Initial release of the Flutter Core SDK

@@ -98,7 +98,7 @@ class ConfigurationService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateBeaconUrl(String url) {
+  void updateBeaconUrl({String url = "metrix.ws"}) {
     _state = _state.copyWith(beaconUrl: url);
     notifyListeners();
   }
