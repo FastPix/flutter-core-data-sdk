@@ -9,5 +9,6 @@ export 'src/event/player_event.dart';
 export 'src/model/matrics_configuration.dart';
 export 'src/dispatcher/event_dispatcher.dart';
 export 'src/observer/player_observer.dart';
+export 'src/model/error_model.dart';
 export 'src/model/player_data.dart';
 export 'src/model/video_data.dart';
