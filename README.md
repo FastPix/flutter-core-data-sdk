@@ -18,7 +18,7 @@ Add the following dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_core_sdk: ^1.0.0
+  flutter_core_sdk: ^1.0.2
 ```
 
 Then run:
