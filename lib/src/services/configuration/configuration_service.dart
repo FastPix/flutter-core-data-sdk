@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:fastpix_flutter_core_data/src/util/scaling_tracker.dart';
 import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
 import 'package:fastpix_flutter_core_data/src/model/change_track.dart';
 import 'package:uuid/uuid.dart';
@@ -36,7 +37,7 @@ class ConfigurationService extends ChangeNotifier {
 
   bool get isSeeking => _state.isSeeking;
 
-  String baseUrl = "stream.fastpix.io";
+  String baseUrl = "stream.fastpix.com";
 
   void updateSeeking(bool value) {
     _state = _state.copyWith(isSeeking: value);
@@ -98,7 +99,7 @@ class ConfigurationService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateBeaconUrl({String url = "metrix.ws"}) {
+  void updateBeaconUrl({String url = "anlytix.io"}) {
     _state = _state.copyWith(beaconUrl: url);
     notifyListeners();
   }
@@ -120,12 +121,19 @@ class ConfigurationService extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Counter methods
-  String incrementSequenceCounter() {
-    final newCounter = _state.sequenceCounter + 1;
-    _state = _state.copyWith(sequenceCounter: newCounter);
+  // Counter methods — view and player sequences are independent (matches Android).
+  String incrementViewSequenceCounter() {
+    final newCounter = _state.viewSequenceCounter + 1;
+    _state = _state.copyWith(viewSequenceCounter: newCounter);
     notifyListeners();
     return newCounter.toString();
+  }
+
+  int incrementPlayerSequenceCounter() {
+    final newCounter = _state.playerSequenceCounter + 1;
+    _state = _state.copyWith(playerSequenceCounter: newCounter);
+    notifyListeners();
+    return newCounter;
   }
 
   // Utility methods
@@ -143,62 +151,42 @@ class ConfigurationService extends ChangeNotifier {
     return List.generate(24, (_) => chars[rand.nextInt(16)]).join();
   }
 
-  void updateViewTotalDownScaling(int scaling) {
-    _state = _state.copyWith(viewTotalDownScaling: scaling);
-    notifyListeners();
-  }
-
-  void updateViewTotalUpScaling(int scaling) {
-    _state = _state.copyWith(viewTotalUpScaling: scaling);
-    notifyListeners();
-  }
-
-  void updateViewMaxDownScalePercentage(int percentage) {
-    _state = _state.copyWith(viewMaxDownScalePercentage: percentage);
-    notifyListeners();
-  }
-
   void updateCustomData(List<CustomData> list) {
     _state = _state.copyWith(customData: list);
-    notifyListeners();
-  }
-
-  void updateViewMaxUpScalePercentage(int percentage) {
-    _state = _state.copyWith(viewMaxUpScalePercentage: percentage);
     notifyListeners();
   }
 
   // Reset method
   Future<void> reset() async {
     _state = ConfigurationState();
-    // Reset instance variables that are not part of the state
     resetSeekTracking();
+    ScalingTracker.instance.reset();
     notifyListeners();
   }
 
-  Future<void> calculateViewScaling() async {
-    final playerHeight = _state.playerObserver?.playerHeight() ?? 0;
-    final playerWidth = _state.playerObserver?.playerWidth() ?? 0;
-    final videoHeight = _getVideoHeight();
-    final videoWidth = _getVideoWidth();
-    final widthScale = playerWidth / videoWidth;
-    final heightScale = playerHeight / videoHeight;
+  /// Collects a sampling point for the scaling tracker. Call on
+  /// `play`/`playing`/`pulse`. Sync — reads cached playhead from the
+  /// observer.
+  void collectDataForScaling() {
+    final observer = _state.playerObserver;
+    if (observer == null) return;
+    ScalingTracker.instance.collectDataForScaling(
+      currentPlayheadTime: observer.playerPlayHeadTime(),
+      playerWidth: observer.playerWidth().round(),
+      playerHeight: observer.playerHeight().round(),
+      videoSourceWidth: _getVideoWidth().toInt(),
+      videoSourceHeight: _getVideoHeight().toInt(),
+    );
+  }
 
-    // average scale factor
-    final scale = (widthScale + heightScale) / 2;
-
-    double upscalePercentage = 0;
-    double downscalePercentage = 0;
-
-    if (scale > 1) {
-      upscalePercentage = (scale - 1);
-    } else if (scale < 1) {
-      downscalePercentage = (1 - scale);
-    }
-    updateViewTotalDownScaling(downscalePercentage.toInt());
-    updateViewTotalUpScaling(upscalePercentage.toInt());
-    updateViewMaxUpScalePercentage(upscalePercentage.toInt());
-    updateViewMaxDownScalePercentage(downscalePercentage.toInt());
+  /// Closes the current scaling interval and accumulates the result. Call on
+  /// `pause`/`buffering`/`seeking`/`error`/`viewCompleted`. Sync — reads
+  /// cached playhead from the observer.
+  void calculateScalingForCurrentInterval({int? playheadOverride}) {
+    final observer = _state.playerObserver;
+    if (observer == null) return;
+    final playhead = playheadOverride ?? observer.playerPlayHeadTime();
+    ScalingTracker.instance.calculateScalingForCurrentInterval(playhead);
   }
 
   int calculateTotalSeekedTime() {

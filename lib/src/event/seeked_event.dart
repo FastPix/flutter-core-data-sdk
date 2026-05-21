@@ -2,82 +2,62 @@ import '../services/service_locator.dart';
 import 'event_base.dart';
 
 class SeekedEvent extends BaseEvent {
-  final String? viewSeekDuration;
-  final String? viewMaxSeekDuration;
+  final int? viewSeekDuration;
+  final int? viewMaxSeekDuration;
   final String? viewSeekCount;
-  final String? viewMaxUpScalePercentage;
-  final String? viewMaxDownScalePercentage;
-  final String? viewTotalUpScaling;
-  final String? viewTotalDownScaling;
 
-  const SeekedEvent(
-      {super.workSpaceId,
-      super.viewId,
-      super.viewSequenceNumber,
-      super.playerSequenceNumber,
-      super.beaconDomain,
-      super.playheadTime,
-      super.viewerTimeStamp,
-      super.playerInstanceId,
-      super.viewWatchTime,
-      super.connectionType,
-      this.viewMaxUpScalePercentage,
-      this.viewMaxDownScalePercentage,
-      this.viewTotalUpScaling,
-      this.viewTotalDownScaling,
-      this.viewSeekDuration,
-      this.viewMaxSeekDuration,
-      this.viewSeekCount});
+  SeekedEvent({
+    super.workSpaceId,
+    super.viewId,
+    super.viewSequenceNumber,
+    super.playerSequenceNumber,
+    super.beaconDomain,
+    super.playheadTime,
+    super.viewerTimeStamp,
+    super.playerInstanceId,
+    super.viewWatchTime,
+    super.connectionType,
+    super.isPlayerFullScreen,
+    this.viewSeekDuration,
+    this.viewMaxSeekDuration,
+    this.viewSeekCount,
+  }) : super(eventName: 'seeked');
 
   @override
-  Map<String, String?> toJson() {
+  Map<String, dynamic> toJson() {
     final baseJson = super.toJson();
     return {
       ...baseJson,
-      'vemauppg': viewMaxUpScalePercentage,
-      'vemadopg': viewMaxDownScalePercentage,
-      'vetlug': viewTotalUpScaling,
-      'vetldg': viewTotalDownScaling,
       'vesedu': viewSeekDuration,
       'vemaseti': viewMaxSeekDuration,
       'veseco': viewSeekCount,
-      'evna': 'seeked',
     };
   }
 
   static Future<SeekedEvent> createSeekedEvent() async {
     final configService = ServiceLocator().configurationService;
     final metrix = ServiceLocator().metricsStateManager;
-    final baseData = await BaseEvent.getBaseEventData(configService);
+    final baseData = BaseEvent.getBaseEventData(configService);
     await metrix.handleSeeked(
       DateTime.fromMillisecondsSinceEpoch(configService.currentTimeStamp()),
     );
-    final viewMaxUpScalePercentage =
-        configService.state.viewMaxUpScalePercentage;
-    final viewMaxDownScalePercentage =
-        configService.state.viewMaxDownScalePercentage;
-    final viewTotalUpScaling = metrix.viewTotalUpscaling;
-    final viewTotalDownScaling = metrix.viewTotalDownscaling;
-    final seekDuration = metrix.viewSeekDuration.toString();
+    final seekDuration = metrix.viewSeekDuration;
 
     return SeekedEvent(
-      workSpaceId: baseData['wsid'],
-      viewId: baseData['veid'],
-      viewSequenceNumber: baseData['vesqnu'],
-      playerSequenceNumber: baseData['plsqnu'],
-      beaconDomain: baseData['bedn'],
-      playheadTime: baseData['plphti'],
-      viewerTimeStamp: baseData['vitp'],
-      playerInstanceId: baseData['plinid'],
-      viewWatchTime: baseData['vewati'],
-      connectionType: baseData['vicity'],
+      workSpaceId: baseData.workSpaceId,
+      viewId: baseData.viewId,
+      viewSequenceNumber: baseData.viewSequenceNumber,
+      playerSequenceNumber: baseData.playerSequenceNumber,
+      beaconDomain: baseData.beaconDomain,
+      playheadTime: baseData.playheadTime,
+      viewerTimeStamp: baseData.viewerTimeStamp,
+      playerInstanceId: baseData.playerInstanceId,
+      viewWatchTime: baseData.viewWatchTime,
+      connectionType: baseData.connectionType,
+      isPlayerFullScreen: baseData.isPlayerFullScreen,
       viewSeekDuration: seekDuration,
       viewMaxSeekDuration: seekDuration,
       viewSeekCount: metrix.viewSeekCount.toString(),
-      viewMaxUpScalePercentage: viewMaxUpScalePercentage.toString(),
-      viewMaxDownScalePercentage: viewMaxDownScalePercentage.toString(),
-      viewTotalUpScaling: viewTotalUpScaling.toString(),
-      viewTotalDownScaling: viewTotalDownScaling.toString(),
     );
   }
 }

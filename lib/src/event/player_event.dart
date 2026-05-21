@@ -12,5 +12,8 @@ enum PlayerEvent {
   pulse,
   playerReady,
   error,
-  ended
+  ended,
+  requestCompleted,
+  requestCanceled,
+  requestFailed,
 }

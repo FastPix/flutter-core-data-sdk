@@ -1,22 +1,22 @@
-
 import '../metrics/metrics_state_manager.dart';
 import '../services/service_locator.dart';
+import '../util/utils.dart';
 import 'event_base.dart';
 
 class PlayEvent extends BaseEvent {
   final String? videoId;
   final String? viewRebufferDuration;
-  final String? mimeType;
-  final String? fastPixApiVersion;
-  final String? videoCodec;
-  final String? hostName;
   final String? viewBufferFrequency;
-  final String? videoHeight;
-  final String? videoWidth;
-  final String? videoLanguage;
   final String? viewBufferPercentage;
+  final String? videoDuration;
+  final String? playerWidth;
+  final String? playerHeight;
+  final String? videoWidth;
+  final String? videoHeight;
+  final String? videoSourceUrl;
+  final String? videoHostName;
 
-  const PlayEvent({
+  PlayEvent({
     super.workSpaceId,
     super.viewId,
     super.viewSequenceNumber,
@@ -27,76 +27,77 @@ class PlayEvent extends BaseEvent {
     super.playerInstanceId,
     super.viewWatchTime,
     super.connectionType,
+    super.isPlayerFullScreen,
     this.videoId,
     this.viewRebufferDuration,
-    this.mimeType,
-    this.fastPixApiVersion,
-    this.videoCodec,
-    this.hostName,
     this.viewBufferFrequency,
+    this.viewBufferPercentage,
+    this.videoDuration,
+    this.playerWidth,
+    this.playerHeight,
     this.videoWidth,
     this.videoHeight,
-    this.videoLanguage,
-    this.viewBufferPercentage,
-  });
+    this.videoSourceUrl,
+    this.videoHostName,
+  }) : super(eventName: 'play');
 
   @override
-  Map<String, String?> toJson() {
+  Map<String, dynamic> toJson() {
     final baseJson = super.toJson();
     return {
       ...baseJson,
-      'evna': 'play',
       'vdid': videoId,
       'verbdu': viewRebufferDuration,
-      'vdsomity': mimeType,
-      'fpaivn': fastPixApiVersion,
-      'vdsocc': videoCodec,
-      'vdsohn': hostName,
-      'vdsoht': videoHeight,
-      'vdsowt': videoWidth,
-      'vdlncd': videoLanguage,
       'verbfq': viewBufferFrequency,
       'verbpg': viewBufferPercentage,
+      'vdsodu': videoDuration,
+      'plwt': playerWidth,
+      'plht': playerHeight,
+      'rqvdwt': videoWidth,
+      'rqvdht': videoHeight,
+      'vdsour': videoSourceUrl,
+      'vdsohn': videoHostName,
     };
   }
 
   static Future<PlayEvent> createPlayEvent() async {
     final configService = ServiceLocator().configurationService;
     final metricsManager = MetricsStateManager();
-    final baseData = await BaseEvent.getBaseEventData(configService);
+    final baseData = BaseEvent.getBaseEventData(configService);
     final videoData = configService.videoData;
-    // Update metrics state
+    final playerObserver = configService.playerObserver;
     await metricsManager.handlePlay(
       DateTime.fromMillisecondsSinceEpoch(configService.currentTimeStamp()),
     );
     final bufferFrequency = metricsManager.getRebufferFrequency();
     return PlayEvent(
-      workSpaceId: baseData['wsid'],
-      viewId: baseData['veid'],
-      viewSequenceNumber: baseData['vesqnu'],
-      playerSequenceNumber: baseData['plsqnu'],
-      beaconDomain: baseData['bedn'],
-      playheadTime: baseData['plphti'],
-      viewerTimeStamp: baseData['vitp'],
-      playerInstanceId: baseData['plinid'],
-      viewWatchTime: baseData['vewati'],
-      connectionType: baseData['vicity'],
+      workSpaceId: baseData.workSpaceId,
+      viewId: baseData.viewId,
+      viewSequenceNumber: baseData.viewSequenceNumber,
+      playerSequenceNumber: baseData.playerSequenceNumber,
+      beaconDomain: baseData.beaconDomain,
+      playheadTime: baseData.playheadTime,
+      viewerTimeStamp: baseData.viewerTimeStamp,
+      playerInstanceId: baseData.playerInstanceId,
+      viewWatchTime: baseData.viewWatchTime,
+      connectionType: baseData.connectionType,
+      isPlayerFullScreen: baseData.isPlayerFullScreen,
       videoId:
           videoData?.videoId ?? configService.generateRandomIdOf24Characters(),
       viewRebufferDuration: metricsManager.viewRebufferDuration.toString(),
       viewBufferFrequency: bufferFrequency.toString(),
-      mimeType: "",
-      fastPixApiVersion: "1.0",
-      videoCodec: "",
-      hostName: "",
+      viewBufferPercentage: metricsManager.viewRebufferPercentage.toString(),
+      videoDuration: playerObserver?.videoSourceDuration().toString(),
+      playerWidth: playerObserver?.playerWidth().round().toString(),
+      playerHeight: playerObserver?.playerHeight().round().toString(),
       videoHeight: configService.changeTrack?.height == null
-          ? configService.playerObserver?.videoSourceHeight().toString()
+          ? playerObserver?.videoSourceHeight().toString()
           : configService.changeTrack?.height?.toString(),
       videoWidth: configService.changeTrack?.width == null
-          ? configService.playerObserver?.videoSourceWidth().toString()
+          ? playerObserver?.videoSourceWidth().toString()
           : configService.changeTrack?.width?.toString(),
-      viewBufferPercentage: metricsManager.viewRebufferPercentage.toString(),
-      videoLanguage: configService.playerObserver?.playerLanguageCode(),
+      videoSourceUrl: videoData?.videoUrl,
+      videoHostName: Utils.getDomain(videoData?.videoUrl),
     );
   }
 }

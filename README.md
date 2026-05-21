@@ -226,7 +226,7 @@ await metrics.dispatchEvent(
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Support
-- **Email**: support@fastpix.io
+- **Email**: support@fastpix.com
 
 ## Changelog
 

@@ -1,46 +1,73 @@
 import '../services/service_locator.dart';
+import '../util/scaling_tracker.dart';
 import 'event_base.dart';
 
 class SeekingEvent extends BaseEvent {
-  const SeekingEvent(
-      {super.workSpaceId,
-      super.viewId,
-      super.viewSequenceNumber,
-      super.playerSequenceNumber,
-      super.beaconDomain,
-      super.playheadTime,
-      super.viewerTimeStamp,
-      super.playerInstanceId,
-      super.connectionType});
+  final String? viewTotalContentPlayBackTime;
+  final double? viewMaxUpScalePercentage;
+  final double? viewMaxDownScalePercentage;
+  final double? viewTotalUpScaling;
+  final double? viewTotalDownScaling;
+
+  SeekingEvent({
+    super.workSpaceId,
+    super.viewId,
+    super.viewSequenceNumber,
+    super.playerSequenceNumber,
+    super.beaconDomain,
+    super.playheadTime,
+    super.viewerTimeStamp,
+    super.playerInstanceId,
+    super.viewWatchTime,
+    super.connectionType,
+    super.isPlayerFullScreen,
+    this.viewTotalContentPlayBackTime,
+    this.viewMaxUpScalePercentage,
+    this.viewMaxDownScalePercentage,
+    this.viewTotalUpScaling,
+    this.viewTotalDownScaling,
+  }) : super(eventName: 'seeking');
 
   @override
-  Map<String, String?> toJson() {
+  Map<String, dynamic> toJson() {
     final baseJson = super.toJson();
     return {
       ...baseJson,
-      'evna': 'seeking',
+      'vetlctpbti': viewTotalContentPlayBackTime,
+      'vemauppg': viewMaxUpScalePercentage,
+      'vemadopg': viewMaxDownScalePercentage,
+      'vetlug': viewTotalUpScaling,
+      'vetldg': viewTotalDownScaling,
     };
   }
 
   static Future<SeekingEvent> createSeekingEvent() async {
     final configService = ServiceLocator().configurationService;
     final metrix = ServiceLocator().metricsStateManager;
-    final baseData = await BaseEvent.getBaseEventData(configService);
-    // Update metrics state
+    final baseData = BaseEvent.getBaseEventData(configService);
     await metrix.handleSeeking(
       DateTime.fromMillisecondsSinceEpoch(configService.currentTimeStamp()),
     );
+    configService.calculateScalingForCurrentInterval();
+    final tracker = ScalingTracker.instance;
 
     return SeekingEvent(
-      workSpaceId: baseData['wsid'],
-      viewId: baseData['veid'],
-      viewSequenceNumber: baseData['vesqnu'],
-      playerSequenceNumber: baseData['plsqnu'],
-      beaconDomain: baseData['bedn'],
-      playheadTime: baseData['plphti'],
-      viewerTimeStamp: baseData['vitp'],
-      playerInstanceId: baseData['plinid'],
-      connectionType: baseData['vicity'],
+      workSpaceId: baseData.workSpaceId,
+      viewId: baseData.viewId,
+      viewSequenceNumber: baseData.viewSequenceNumber,
+      playerSequenceNumber: baseData.playerSequenceNumber,
+      beaconDomain: baseData.beaconDomain,
+      playheadTime: baseData.playheadTime,
+      viewerTimeStamp: baseData.viewerTimeStamp,
+      playerInstanceId: baseData.playerInstanceId,
+      viewWatchTime: baseData.viewWatchTime,
+      connectionType: baseData.connectionType,
+      isPlayerFullScreen: baseData.isPlayerFullScreen,
+      viewTotalContentPlayBackTime: tracker.totalPlaybackTime.toString(),
+      viewMaxUpScalePercentage: tracker.currentMaxUpscale,
+      viewMaxDownScalePercentage: tracker.currentMaxDownscale,
+      viewTotalUpScaling: tracker.totalUpscalingTimeWeighted,
+      viewTotalDownScaling: tracker.totalDownscalingTimeWeighted,
     );
   }
 }

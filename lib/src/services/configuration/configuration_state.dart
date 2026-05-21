@@ -20,16 +20,13 @@ class ConfigurationState {
   final ChangeTrack? changeTrack;
   final String? connectionType;
   final int viewSeekCount;
-  final int sequenceCounter;
+  final int viewSequenceCounter;
+  final int playerSequenceCounter;
   final Map<String, int> seekMap;
   final int viewRebufferCount;
   final int bufferStartedTimeStamp;
   final int lastPlayHeadTime;
   final int viewTotalContentPlayBackTime;
-  final int viewTotalDownScaling;
-  final int viewTotalUpScaling;
-  final int viewMaxDownScalePercentage;
-  final int viewMaxUpScalePercentage;
   final String viewReBufferDuration;
   final bool isViewTimeToFirstFrameSent;
   final bool isSeeking;
@@ -53,17 +50,14 @@ class ConfigurationState {
       this.isViewBeginCalled = false,
       this.viewerTimeStamp,
       this.viewSeekCount = 0,
-      this.sequenceCounter = 0,
+      this.viewSequenceCounter = 0,
+      this.playerSequenceCounter = 0,
       this.seekMap = const {},
       this.customData = const [],
       this.viewRebufferCount = 0,
       this.bufferStartedTimeStamp = 0,
       this.lastPlayHeadTime = 0,
       this.viewTotalContentPlayBackTime = 0,
-      this.viewTotalDownScaling = 0,
-      this.viewTotalUpScaling = 0,
-      this.viewMaxDownScalePercentage = 0,
-      this.viewMaxUpScalePercentage = 0,
       this.viewReBufferDuration = "0",
       this.isViewTimeToFirstFrameSent = false,
       this.isSeeking = false,
@@ -82,16 +76,13 @@ class ConfigurationState {
       int? viewPauseTimeStamp,
       int? viewerTimeStamp,
       int? viewSeekCount,
-      int? sequenceCounter,
+      int? viewSequenceCounter,
+      int? playerSequenceCounter,
       Map<String, int>? seekMap,
       int? viewRebufferCount,
       int? bufferStartedTimeStamp,
       int? lastPlayHeadTime,
       int? viewTotalContentPlayBackTime,
-      int? viewTotalDownScaling,
-      int? viewTotalUpScaling,
-      int? viewMaxDownScalePercentage,
-      int? viewMaxUpScalePercentage,
       String? viewId,
       String? viewReBufferDuration,
       bool? isViewTimeToFirstFrameSent,
@@ -114,7 +105,9 @@ class ConfigurationState {
         viewPauseTimeStamp: viewPauseTimeStamp ?? this.viewPauseTimeStamp,
         viewerTimeStamp: viewerTimeStamp ?? this.viewerTimeStamp,
         viewSeekCount: viewSeekCount ?? this.viewSeekCount,
-        sequenceCounter: sequenceCounter ?? this.sequenceCounter,
+        viewSequenceCounter: viewSequenceCounter ?? this.viewSequenceCounter,
+        playerSequenceCounter:
+            playerSequenceCounter ?? this.playerSequenceCounter,
         seekMap: seekMap ?? this.seekMap,
         viewRebufferCount: viewRebufferCount ?? this.viewRebufferCount,
         bufferStartedTimeStamp:
@@ -122,12 +115,6 @@ class ConfigurationState {
         lastPlayHeadTime: lastPlayHeadTime ?? this.lastPlayHeadTime,
         viewTotalContentPlayBackTime:
             viewTotalContentPlayBackTime ?? this.viewTotalContentPlayBackTime,
-        viewTotalDownScaling: viewTotalDownScaling ?? this.viewTotalDownScaling,
-        viewTotalUpScaling: viewTotalUpScaling ?? this.viewTotalUpScaling,
-        viewMaxDownScalePercentage:
-            viewMaxDownScalePercentage ?? this.viewMaxDownScalePercentage,
-        viewMaxUpScalePercentage:
-            viewMaxUpScalePercentage ?? this.viewMaxUpScalePercentage,
         viewReBufferDuration: viewReBufferDuration ?? this.viewReBufferDuration,
         viewId: viewId ?? this.viewId,
         isViewTimeToFirstFrameSent:
@@ -155,16 +142,14 @@ class ConfigurationState {
         other.viewPauseTimeStamp == viewPauseTimeStamp &&
         other.viewerTimeStamp == viewerTimeStamp &&
         other.viewSeekCount == viewSeekCount &&
-        other.sequenceCounter == sequenceCounter &&
+        other.viewSequenceCounter == viewSequenceCounter &&
+        other.playerSequenceCounter == playerSequenceCounter &&
         mapEquals(other.seekMap, seekMap) &&
         other.viewRebufferCount == viewRebufferCount &&
         other.bufferStartedTimeStamp == bufferStartedTimeStamp &&
         other.lastPlayHeadTime == lastPlayHeadTime &&
         other.viewTotalContentPlayBackTime == viewTotalContentPlayBackTime &&
-        other.viewTotalDownScaling == viewTotalDownScaling &&
-        other.viewTotalUpScaling == viewTotalUpScaling &&
         other.playerId == playerId &&
-        other.viewMaxDownScalePercentage == viewMaxDownScalePercentage &&
         other.viewReBufferDuration == viewReBufferDuration &&
         other.viewId == viewId &&
         other.isViewTimeToFirstFrameSent == isViewTimeToFirstFrameSent &&
@@ -173,8 +158,7 @@ class ConfigurationState {
         other.customData == customData &&
         other.isViewBeginCalled == isViewBeginCalled &&
         other.connectionType == connectionType &&
-        other.changeTrack == changeTrack &&
-        other.viewMaxUpScalePercentage == viewMaxUpScalePercentage;
+        other.changeTrack == changeTrack;
   }
 
   @override
@@ -190,16 +174,14 @@ class ConfigurationState {
     viewPauseTimeStamp,
     viewerTimeStamp,
     viewSeekCount,
-    sequenceCounter,
+    viewSequenceCounter,
+    playerSequenceCounter,
     seekMap,
     viewRebufferCount,
     bufferStartedTimeStamp,
     lastPlayHeadTime,
     viewTotalContentPlayBackTime,
-    viewTotalDownScaling,
-    viewTotalUpScaling,
     playerId,
-    viewMaxDownScalePercentage,
     viewReBufferDuration,
     viewId,
     isViewTimeToFirstFrameSent,
@@ -209,6 +191,5 @@ class ConfigurationState {
     isViewBeginCalled,
     connectionType,
     changeTrack,
-    viewMaxUpScalePercentage,
   ]);
 }

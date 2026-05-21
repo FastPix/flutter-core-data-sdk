@@ -31,5 +31,13 @@ mixin PlayerObserver {
 
   int videoSourceWidth();
 
-  Future<int> playerPlayHeadTime();
+  /// Returns the player's current playhead position in milliseconds.
+  ///
+  /// Must be synchronous and non-blocking. Hosts should subscribe to their
+  /// player's position stream (e.g. BetterPlayer's `position` poller) and
+  /// cache the latest value in a field; this method just returns the cached
+  /// `int`. Returning a slightly-stale value is fine — the SDK calls this
+  /// at event-submission time and never awaits it. If no position is known
+  /// yet, return `0`.
+  int playerPlayHeadTime();
 }

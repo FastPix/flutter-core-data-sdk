@@ -1,21 +1,27 @@
 import '../services/service_locator.dart';
+import '../util/scaling_tracker.dart';
+import '../util/utils.dart';
 import 'event_base.dart';
 
 class PulseEvent extends BaseEvent {
-  final String? viewMaxUpScalePercentage;
-  final String? viewMaxDownScalePercentage;
-  final String? viewTotalUpScaling;
-  final String? viewTotalDownScaling;
-  final String? isPlayerFullScreen;
-  final String? viewRebufferDuration;
   final String? viewBufferFrequency;
   final String? viewBufferPercentage;
   final String? playerWidth;
   final String? playerHeight;
   final String? videoWidth;
   final String? videoHeight;
+  final String? viewRebufferDuration;
+  final String? videoDuration;
+  final String? viewTotalContentPlayBackTime;
+  final double? viewMaxUpScalePercentage;
+  final double? viewMaxDownScalePercentage;
+  final double? viewTotalUpScaling;
+  final double? viewTotalDownScaling;
+  final String? videoSourceUrl;
+  final String? videoHostName;
+  final String? videoCDN;
 
-  const PulseEvent({
+  PulseEvent({
     super.workSpaceId,
     super.viewId,
     super.viewSequenceNumber,
@@ -26,75 +32,74 @@ class PulseEvent extends BaseEvent {
     super.playerInstanceId,
     super.viewWatchTime,
     super.connectionType,
-    this.viewMaxUpScalePercentage,
-    this.viewMaxDownScalePercentage,
-    this.viewTotalUpScaling,
-    this.isPlayerFullScreen,
-    this.viewTotalDownScaling,
-    this.viewRebufferDuration,
+    super.isPlayerFullScreen,
     this.viewBufferFrequency,
     this.viewBufferPercentage,
     this.playerWidth,
     this.playerHeight,
     this.videoWidth,
     this.videoHeight,
-  });
+    this.viewRebufferDuration,
+    this.videoDuration,
+    this.viewTotalContentPlayBackTime,
+    this.viewMaxUpScalePercentage,
+    this.viewMaxDownScalePercentage,
+    this.viewTotalUpScaling,
+    this.viewTotalDownScaling,
+    this.videoSourceUrl,
+    this.videoHostName,
+    this.videoCDN,
+  }) : super(eventName: 'pulse');
 
   @override
-  Map<String, String?> toJson() {
+  Map<String, dynamic> toJson() {
     final baseJson = super.toJson();
     return {
       ...baseJson,
-      'vemauppg': viewMaxUpScalePercentage,
-      'vemadopg': viewMaxDownScalePercentage,
-      'vetlug': viewTotalUpScaling,
-      'vetldg': viewTotalDownScaling,
-      'plisfl': isPlayerFullScreen,
-      'vewati': viewWatchTime,
-      'verbdu': viewRebufferDuration,
       'verbfq': viewBufferFrequency,
       'verbpg': viewBufferPercentage,
       'plwt': playerWidth,
       'plht': playerHeight,
       'rqvdwt': videoWidth,
       'rqvdht': videoHeight,
-      'evna': 'pulse',
+      'verbdu': viewRebufferDuration,
+      'vdsodu': videoDuration,
+      'vetlctpbti': viewTotalContentPlayBackTime,
+      'vemauppg': viewMaxUpScalePercentage,
+      'vemadopg': viewMaxDownScalePercentage,
+      'vetlug': viewTotalUpScaling,
+      'vetldg': viewTotalDownScaling,
+      'vdsour': videoSourceUrl,
+      'vdsohn': videoHostName,
+      'vdcn': videoCDN,
     };
   }
 
   static Future<PulseEvent> createPulseEvent() async {
     final configService = ServiceLocator().configurationService;
     final metrix = ServiceLocator().metricsStateManager;
-    final baseData = await BaseEvent.getBaseEventData(configService);
-    await configService.calculateViewScaling();
-    final viewMaxUpScalePercentage =
-        configService.state.viewMaxUpScalePercentage;
+    final baseData = BaseEvent.getBaseEventData(configService);
+    configService.collectDataForScaling();
+    final tracker = ScalingTracker.instance;
     final isFullScreen = configService.playerObserver?.isPlayerFullScreen();
     if (isFullScreen == true) {
       metrix.updatePlayerOrientationChange();
     }
     final playerObserver = configService.playerObserver;
+    final videoData = configService.videoData;
     final bufferFrequency = metrix.getRebufferFrequency();
-    final viewMaxDownScalePercentage =
-        configService.state.viewMaxDownScalePercentage;
-    final viewTotalUpScaling = configService.state.viewTotalUpScaling;
-    final viewTotalDownScaling = configService.state.viewTotalDownScaling;
     return PulseEvent(
-      workSpaceId: baseData['wsid'],
-      viewId: baseData['veid'],
-      viewSequenceNumber: baseData['vesqnu'],
-      playerSequenceNumber: baseData['plsqnu'],
-      beaconDomain: baseData['bedn'],
-      playheadTime: baseData['plphti'],
-      viewerTimeStamp: baseData['vitp'],
-      playerInstanceId: baseData['plinid'],
-      viewWatchTime: baseData['vewati'],
-      connectionType: baseData['vicity'],
-      viewMaxUpScalePercentage: viewMaxUpScalePercentage.toString(),
-      viewMaxDownScalePercentage: viewMaxDownScalePercentage.toString(),
-      viewTotalUpScaling: viewTotalUpScaling.toString(),
+      workSpaceId: baseData.workSpaceId,
+      viewId: baseData.viewId,
+      viewSequenceNumber: baseData.viewSequenceNumber,
+      playerSequenceNumber: baseData.playerSequenceNumber,
+      beaconDomain: baseData.beaconDomain,
+      playheadTime: baseData.playheadTime,
+      viewerTimeStamp: baseData.viewerTimeStamp,
+      playerInstanceId: baseData.playerInstanceId,
+      viewWatchTime: baseData.viewWatchTime,
+      connectionType: baseData.connectionType,
       isPlayerFullScreen: metrix.isPlayerOrientationChanged ? 'true' : 'false',
-      viewTotalDownScaling: viewTotalDownScaling.toString(),
       viewRebufferDuration: metrix.viewRebufferDuration.toString(),
       viewBufferPercentage: metrix.viewRebufferPercentage.toString(),
       viewBufferFrequency: bufferFrequency.toString(),
@@ -106,6 +111,15 @@ class PulseEvent extends BaseEvent {
       videoWidth: configService.changeTrack?.width == null
           ? playerObserver?.videoSourceWidth().toString()
           : configService.changeTrack?.width?.toString(),
+      videoDuration: playerObserver?.videoSourceDuration().toString(),
+      viewTotalContentPlayBackTime: tracker.totalPlaybackTime.toString(),
+      viewMaxUpScalePercentage: tracker.currentMaxUpscale,
+      viewMaxDownScalePercentage: tracker.currentMaxDownscale,
+      viewTotalUpScaling: tracker.totalUpscalingTimeWeighted,
+      viewTotalDownScaling: tracker.totalDownscalingTimeWeighted,
+      videoSourceUrl: videoData?.videoUrl,
+      videoHostName: Utils.getDomain(videoData?.videoUrl),
+      videoCDN: null,
     );
   }
 }
