@@ -31,7 +31,7 @@ class ConfigurationState {
   final bool isViewTimeToFirstFrameSent;
   final bool isSeeking;
   int viewWatchTime = 0;
-  final List<CustomData> customData;
+  final CustomData? customData;
 
   ConfigurationState(
       {this.playerData,
@@ -53,7 +53,7 @@ class ConfigurationState {
       this.viewSequenceCounter = 0,
       this.playerSequenceCounter = 0,
       this.seekMap = const {},
-      this.customData = const [],
+      this.customData,
       this.viewRebufferCount = 0,
       this.bufferStartedTimeStamp = 0,
       this.lastPlayHeadTime = 0,
@@ -88,7 +88,7 @@ class ConfigurationState {
       bool? isViewTimeToFirstFrameSent,
       bool? isSeeking,
       int? viewWatchTime,
-      List<CustomData>? customData,
+      CustomData? customData,
       String? connectionType,
       ChangeTrack? changeTrack,
       bool? isViewBeginCalled}) {

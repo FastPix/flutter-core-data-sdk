@@ -156,10 +156,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     )
         .setVideoData(
           VideoData(
-            'Video ${widget.video.id}',
-            widget.video.id,
-            widget.video.url,
-            'thumbnail_url',
+            videoId: widget.video.id,
+            videoLanguage: "video-language",
+            videoSourceUrl: widget.video.url,
+            videoContentType: "video-content-type",
+            videoTitle: "video-title",
+            videoCDN: "video-cdn",
+            videoDrmType: "video-drm-type",
+            videoProducer: "video-producer",
+            videoSeries: "video-series",
+            videoVariant: "video-variant"
           ),
         )
         .setEnabledLogging(true)

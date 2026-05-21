@@ -205,7 +205,7 @@ class ErrorEvent extends BaseEvent {
     final configService = ServiceLocator().configurationService;
     final sessionService = ServiceLocator().sessionService;
     final baseData = BaseEvent.getBaseEventData(configService);
-    final playerObserver = configService.playerObserver;
+    final observer = configService.playerObserver;
     final videoData = configService.videoData;
     final deviceInfo = await DeviceInfoHelper.getDeviceInfo();
     final packageInfo = SdkInfo.getPackageInformation();
@@ -226,25 +226,25 @@ class ErrorEvent extends BaseEvent {
       connectionType: baseData.connectionType,
       viewWatchTime: baseData.viewWatchTime,
       isPlayerFullScreen: baseData.isPlayerFullScreen,
-      playerErrorCode: playerObserver?.getPlayerError()?.errorCode,
-      playerErrorMessage: playerObserver?.getPlayerError()?.errorMessage,
+      playerErrorCode: observer?.getPlayerError().errorCode,
+      playerErrorMessage: observer?.getPlayerError().errorMessage,
       sessionId: sessionService.sessionId,
       sessionStart: sessionService.sessionStartTime?.toString(),
       sessionExpires: sessionService.sessionExpiryTime?.toString(),
-      videoSourceUrl: videoData?.videoUrl,
+      videoSourceUrl: videoData?.videoSourceUrl,
       fpViewerId: configService.generateUUID(),
       videoTitle: videoData?.videoTitle,
       videoId:
           videoData?.videoId ?? configService.generateRandomIdOf24Characters(),
       playerName: configService.playerData?.playerName,
       playerVersion: configService.playerData?.playerVersion,
-      playerWidth: playerObserver?.playerWidth().round().toString(),
-      playerHeight: playerObserver?.playerHeight().round().toString(),
+      playerWidth: observer?.playerWidth()?.round().toString(),
+      playerHeight: observer?.playerHeight()?.round().toString(),
       videoHeight: configService.changeTrack?.height == null
-          ? playerObserver?.videoSourceHeight().toString()
+          ? observer?.videoSourceHeight().toString()
           : configService.changeTrack?.height?.toString(),
       videoWidth: configService.changeTrack?.width == null
-          ? playerObserver?.videoSourceWidth().toString()
+          ? observer?.videoSourceWidth().toString()
           : configService.changeTrack?.width?.toString(),
       softwareName: configService.playerData?.playerName,
       softwareVersion: configService.playerData?.playerVersion,
@@ -257,13 +257,13 @@ class ErrorEvent extends BaseEvent {
       deviceCategory: 'Mobile',
       deviceManufacturer: deviceInfo['deviceManufacturer'],
       streamType:
-          playerObserver?.isVideoSourceLive() == true ? 'Live' : 'on-demand',
-      videoHostName: Utils.getDomain(videoData?.videoUrl),
-      autoPlay: null,
+          observer?.isLive() == true ? 'live' : 'on-demand',
+      videoHostName: Utils.getDomain(videoData?.videoSourceUrl),
+      autoPlay: observer?.isAutoPlay().toString(),
       viewSessionId: sessionService.sessionId,
-      mimeType: playerObserver?.videoSourceMimeType(),
+      mimeType: observer?.mimeType(),
       fastPixApiVersion: '1.0',
-      videoCodec: null,
+      videoCodec: configService.changeTrack?.codec ?? observer?.playerCodec(),
       videoLanguage: null,
       videoDuration: null,
       videoThumbnail: null,

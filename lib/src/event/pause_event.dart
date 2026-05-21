@@ -57,7 +57,7 @@ class PauseEvent extends BaseEvent {
       DateTime.fromMillisecondsSinceEpoch(configService.currentTimeStamp()),
     );
     final tracker = ScalingTracker.instance;
-    final playerIsPaused = configService.playerObserver?.isPlayerPaused();
+    final playerIsPaused = configService.playerObserver?.isPause();
     final sessionExpiredTime = sessionService.sessionExpiryTime;
 
     return PauseEvent(

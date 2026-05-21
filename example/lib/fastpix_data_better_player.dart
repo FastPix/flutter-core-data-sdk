@@ -6,14 +6,14 @@ import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
 import 'package:fastpix_flutter_core_data_example/valid_events.dart';
 import 'package:flutter/material.dart';
 
-class FastPixBaseBetterPlayer with PlayerObserver {
+class FastPixBaseBetterPlayer implements PlayerObserver {
   final BetterPlayerController playerController;
   final String workspaceId;
   final String? beaconUrl;
   final bool enabledLogging;
   final PlayerData? playerData;
   final VideoData? videoData;
-  final List<CustomData>? customData;
+  final CustomData? customData;
   final String viewerId;
   bool _isPlayerResolutionCalculationDone = false;
   PlayerEvent? _lastDispatchedEvent;
@@ -147,7 +147,7 @@ class FastPixBaseBetterPlayer with PlayerObserver {
   void start() {
     try {
       // Validate required data before starting
-      if (videoData == null || videoData!.videoUrl.isEmpty) {
+      if (videoData == null || videoData?.videoSourceUrl?.isEmpty == true) {
         throw Exception(
           'Invalid video data: videoData or videoUrl is null/empty',
         );
@@ -404,71 +404,6 @@ class FastPixBaseBetterPlayer with PlayerObserver {
     );
   }
 
-  @override
-  bool isPlayerAutoPlayOn() {
-    return playerController.betterPlayerConfiguration.autoPlay;
-  }
-
-  @override
-  bool isPlayerFullScreen() {
-    return playerController.isFullScreen;
-  }
-
-  @override
-  bool isPlayerPaused() {
-    return playerController.isPlaying() == false;
-  }
-
-  @override
-  bool isVideoSourceLive() {
-    return playerController.isLiveStream();
-  }
-
-  @override
-  double playerHeight() {
-    return playerHeightSize;
-  }
-
-  @override
-  String playerLanguageCode() {
-    return audioLanguage;
-  }
-
-  @override
-  int playerPlayHeadTime() => _lastKnownPlayheadMs;
-
-  @override
-  bool playerPreLoadOn() {
-    // BetterPlayer doesn't expose preCache directly, so we'll return false as default
-    // This is a limitation of the current BetterPlayer API
-    return false;
-  }
-
-  @override
-  double playerWidth() {
-    return playerWidthSize;
-  }
-
-  @override
-  int videoSourceDuration() {
-    try {
-      return playerController
-              .videoPlayerController
-              ?.value
-              .duration
-              ?.inMilliseconds ??
-          0;
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  @override
-  int videoSourceHeight() {
-    return playerController.videoPlayerController?.value.size?.height.toInt() ??
-        0;
-  }
-
   String _inferMimeTypeFromUrl(String url) {
     if (url.endsWith(".mp4")) return "video/mp4";
     if (url.endsWith(".m3u8")) return "application/x-mpegURL";
@@ -477,26 +412,7 @@ class FastPixBaseBetterPlayer with PlayerObserver {
     return "application/octet-stream"; // fallback
   }
 
-  @override
-  String videoSourceMimeType() {
-    return _inferMimeTypeFromUrl(videoData!.videoUrl);
-  }
 
-  @override
-  String videoSourceUrl() {
-    return videoData?.videoUrl ?? "NA";
-  }
-
-  @override
-  int videoSourceWidth() {
-    return playerController.videoPlayerController?.value.size?.width.toInt() ??
-        0;
-  }
-
-  @override
-  String videoThumbnailUrl() {
-    return videoData?.videoThumbnailUrl ?? "NA";
-  }
 
   void _calculatePlayerSize() {
     void tryReadSize() {
@@ -524,10 +440,6 @@ class FastPixBaseBetterPlayer with PlayerObserver {
     _playerDimensionKey = key;
   }
 
-  @override
-  ErrorModel? getPlayerError() {
-    return _errorModel;
-  }
 
   void _setupEventListener() {
     if (Platform.isIOS) {
@@ -536,6 +448,115 @@ class FastPixBaseBetterPlayer with PlayerObserver {
       playerController.addEventsListener(_onPlayerEvent);
     }
   }
+
+  BetterPlayerAsmsTrack? get _activeTrack =>
+      playerController.betterPlayerAsmsTrack;
+
+  Size? get _videoSize => playerController.videoPlayerController?.value.size;
+
+  @override
+  int? playerHeight() =>
+      playerHeightSize > 0 ? playerHeightSize.toInt() : null;
+
+  @override
+  int? playerWidth() =>
+      playerWidthSize > 0 ? playerWidthSize.toInt() : null;
+
+  @override
+  int? videoSourceWidth() {
+    final trackWidth = _activeTrack?.width;
+    if (trackWidth != null && trackWidth > 0) return trackWidth;
+    return _videoSize?.width.toInt();
+  }
+
+  @override
+  int? videoSourceHeight() {
+    final trackHeight = _activeTrack?.height;
+    if (trackHeight != null && trackHeight > 0) return trackHeight;
+    return _videoSize?.height.toInt();
+  }
+
+  // Reads the cached playhead populated by [_startPositionPolling] — the SDK
+  // calls this synchronously and cannot await the platform channel.
+  @override
+  int? playHeadTime() => _lastKnownPlayheadMs;
+
+  String? mimeType() {
+    final trackMime = _activeTrack?.mimeType;
+    if (trackMime != null && trackMime.isNotEmpty) return trackMime;
+    final url = playerController.betterPlayerDataSource?.url;
+    if (url == null || url.isEmpty) return null;
+    return _inferMimeTypeFromUrl(url);
+  }
+
+  @override
+  int? sourceFps() => _activeTrack?.frameRate;
+
+  @override
+  String? sourceAdvertisedBitrate() => _activeTrack?.bitrate?.toString();
+
+  @override
+  int? sourceAdvertiseFrameRate() => _activeTrack?.frameRate;
+
+  @override
+  int? sourceDuration() => playerController
+      .videoPlayerController
+      ?.value
+      .duration
+      ?.inMilliseconds;
+
+  @override
+  bool? isPause() {
+    final playing = playerController.isPlaying();
+    if (playing == null) return null;
+    return !playing;
+  }
+
+  @override
+  bool? isAutoPlay() => playerController.betterPlayerConfiguration.autoPlay;
+
+  @override
+  bool? preLoad() => false;
+
+  @override
+  bool? isBuffering() =>
+      playerController.videoPlayerController?.value.isBuffering;
+
+  @override
+  String? playerCodec() {
+    final codecs = _activeTrack?.codecs;
+    return (codecs == null || codecs.isEmpty) ? null : codecs;
+  }
+
+  @override
+  String? sourceHostName() {
+    final url = playerController.betterPlayerDataSource?.url;
+    if (url == null || url.isEmpty) return null;
+    final host = Uri.tryParse(url)?.host;
+    return (host == null || host.isEmpty) ? null : host;
+  }
+
+  @override
+  bool? isLive() => playerController.isLiveStream();
+
+  @override
+  String? sourceUrl() => playerController.betterPlayerDataSource?.url;
+
+  @override
+  bool? isFullScreen() => playerController.isFullScreen;
+
+  @override
+  ErrorModel getPlayerError() =>
+      _errorModel ?? ErrorModel('', '');
+
+  @override
+  String? getVideoCodec() => playerCodec();
+
+  @override
+  String? getSoftwareName() => 'better_player_plus';
+
+  @override
+  String? getSoftwareVersion() => '1.0.8';
 }
 
 class FastPixBaseVideoPlayerBuilder {
@@ -549,7 +570,7 @@ class FastPixBaseVideoPlayerBuilder {
   bool _enabledLogging = false;
   PlayerData? _playerData;
   VideoData? _videoData;
-  List<CustomData>? _customData;
+  CustomData? _customData;
 
   FastPixBaseVideoPlayerBuilder({
     required BetterPlayerController playerController,
@@ -566,7 +587,7 @@ class FastPixBaseVideoPlayerBuilder {
     return this;
   }
 
-  FastPixBaseVideoPlayerBuilder setCustomData(List<CustomData> value) {
+  FastPixBaseVideoPlayerBuilder setCustomData(CustomData value) {
     _customData = value;
     return this;
   }

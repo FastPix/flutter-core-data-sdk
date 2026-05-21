@@ -46,7 +46,7 @@ class VariantChangedEvent extends BaseEvent {
   static Future<VariantChangedEvent> createVariantChangeEvent() async {
     final configService = ServiceLocator().configurationService;
     final baseData = BaseEvent.getBaseEventData(configService);
-    final playerObserver = configService.playerObserver;
+    final observer = configService.playerObserver;
     final videoId = configService.videoData?.videoId ??
         configService.generateRandomIdOf24Characters();
     final frameRateString = configService.changeTrack?.frameRate;
@@ -66,10 +66,10 @@ class VariantChangedEvent extends BaseEvent {
       connectionType: baseData.connectionType,
       isPlayerFullScreen: baseData.isPlayerFullScreen,
       videoSourceHeight: configService.changeTrack?.height == null
-          ? playerObserver?.videoSourceHeight().toString()
+          ? observer?.videoSourceHeight().toString()
           : configService.changeTrack?.height?.toString(),
       videoSourceWidth: configService.changeTrack?.width == null
-          ? playerObserver?.videoSourceWidth().toString()
+          ? observer?.videoSourceWidth().toString()
           : configService.changeTrack?.width?.toString(),
       frameRate: frameRateInt,
       mimeType: configService.changeTrack?.mimeType,

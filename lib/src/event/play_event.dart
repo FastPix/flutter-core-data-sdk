@@ -65,7 +65,7 @@ class PlayEvent extends BaseEvent {
     final metricsManager = MetricsStateManager();
     final baseData = BaseEvent.getBaseEventData(configService);
     final videoData = configService.videoData;
-    final playerObserver = configService.playerObserver;
+    final observer = configService.playerObserver;
     await metricsManager.handlePlay(
       DateTime.fromMillisecondsSinceEpoch(configService.currentTimeStamp()),
     );
@@ -87,17 +87,17 @@ class PlayEvent extends BaseEvent {
       viewRebufferDuration: metricsManager.viewRebufferDuration.toString(),
       viewBufferFrequency: bufferFrequency.toString(),
       viewBufferPercentage: metricsManager.viewRebufferPercentage.toString(),
-      videoDuration: playerObserver?.videoSourceDuration().toString(),
-      playerWidth: playerObserver?.playerWidth().round().toString(),
-      playerHeight: playerObserver?.playerHeight().round().toString(),
+      videoDuration: observer?.sourceDuration().toString(),
+      playerWidth: observer?.playerWidth()?.round().toString(),
+      playerHeight: observer?.playerHeight()?.round().toString(),
       videoHeight: configService.changeTrack?.height == null
-          ? playerObserver?.videoSourceHeight().toString()
+          ? observer?.videoSourceHeight().toString()
           : configService.changeTrack?.height?.toString(),
       videoWidth: configService.changeTrack?.width == null
-          ? playerObserver?.videoSourceWidth().toString()
+          ? observer?.videoSourceWidth().toString()
           : configService.changeTrack?.width?.toString(),
-      videoSourceUrl: videoData?.videoUrl,
-      videoHostName: Utils.getDomain(videoData?.videoUrl),
+      videoSourceUrl: videoData?.videoSourceUrl,
+      videoHostName: Utils.getDomain(videoData?.videoSourceUrl),
     );
   }
 }

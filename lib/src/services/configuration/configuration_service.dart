@@ -23,7 +23,7 @@ class ConfigurationService extends ChangeNotifier {
 
   String? get viewerId => _state.viewerId;
 
-  List<CustomData>? get customData => _state.customData;
+  CustomData? get customData => _state.customData;
 
   String? get playerId => _state.playerId;
 
@@ -64,8 +64,8 @@ class ConfigurationService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateVideoData(VideoData data) {
-    _state = _state.copyWith(videoData: data);
+  void updateVideoData(VideoData? videoData) {
+    _state = _state.copyWith(videoData: videoData);
     notifyListeners();
   }
 
@@ -151,8 +151,8 @@ class ConfigurationService extends ChangeNotifier {
     return List.generate(24, (_) => chars[rand.nextInt(16)]).join();
   }
 
-  void updateCustomData(List<CustomData> list) {
-    _state = _state.copyWith(customData: list);
+  void updateCustomData(CustomData? customData) {
+    _state = _state.copyWith(customData: customData);
     notifyListeners();
   }
 
@@ -171,9 +171,9 @@ class ConfigurationService extends ChangeNotifier {
     final observer = _state.playerObserver;
     if (observer == null) return;
     ScalingTracker.instance.collectDataForScaling(
-      currentPlayheadTime: observer.playerPlayHeadTime(),
-      playerWidth: observer.playerWidth().round(),
-      playerHeight: observer.playerHeight().round(),
+      currentPlayheadTime: observer.playHeadTime() ?? 0,
+      playerWidth: observer.playerWidth() ?? 0,
+      playerHeight: observer.playerHeight() ?? 0,
       videoSourceWidth: _getVideoWidth().toInt(),
       videoSourceHeight: _getVideoHeight().toInt(),
     );
@@ -185,7 +185,7 @@ class ConfigurationService extends ChangeNotifier {
   void calculateScalingForCurrentInterval({int? playheadOverride}) {
     final observer = _state.playerObserver;
     if (observer == null) return;
-    final playhead = playheadOverride ?? observer.playerPlayHeadTime();
+    final playhead = (playheadOverride ?? observer.playHeadTime()) ?? 0;
     ScalingTracker.instance.calculateScalingForCurrentInterval(playhead);
   }
 

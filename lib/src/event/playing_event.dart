@@ -72,7 +72,7 @@ class PlayingEvent extends BaseEvent {
       isViewTimeToFirstFrame =
           configService.currentTimeStamp() - metricsManager.viewBeginTime;
     }
-    final videoDuration = playerObserver?.videoSourceDuration();
+    final videoDuration = playerObserver?.sourceDuration();
 
     await metricsManager.handlePlaying(
       DateTime.fromMillisecondsSinceEpoch(configService.currentTimeStamp()),
@@ -99,12 +99,12 @@ class PlayingEvent extends BaseEvent {
       viewRebufferDuration: metricsManager.viewRebufferDuration.toString(),
       viewBufferPercentage: metricsManager.viewRebufferPercentage.toString(),
       viewBufferFrequency: bufferFrequency.toString(),
-      playerWidth: playerObserver?.playerWidth().round().toString(),
-      playerHeight: playerObserver?.playerHeight().round().toString(),
+      playerWidth: playerObserver?.playerWidth()?.round().toString(),
+      playerHeight: playerObserver?.playerHeight()?.round().toString(),
       videoSourceWidth: playerObserver?.videoSourceWidth().toString(),
       videoSourceHeight: playerObserver?.videoSourceHeight().toString(),
-      videoSourceUrl: videoData?.videoUrl,
-      videoHostName: Utils.getDomain(videoData?.videoUrl),
+      videoSourceUrl: videoData?.videoSourceUrl,
+      videoHostName: Utils.getDomain(videoData?.videoSourceUrl),
     );
   }
 }

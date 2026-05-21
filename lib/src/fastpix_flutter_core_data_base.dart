@@ -62,10 +62,10 @@ class FastPixMetrics {
       _configService.updateBeaconUrl();
     }
     if (metricsConfiguration?.customData != null) {
-      _configService.updateCustomData(metricsConfiguration!.customData!);
+      _configService.updateCustomData(metricsConfiguration?.customData);
     }
     if (metricsConfiguration?.videoData != null) {
-      _configService.updateVideoData(metricsConfiguration!.videoData!);
+      _configService.updateVideoData(metricsConfiguration?.videoData);
     }
     if (metricsConfiguration?.playerData != null) {
       _configService.updatePlayerData(metricsConfiguration!.playerData!);
@@ -204,8 +204,7 @@ class FastPixMetrics {
         MetricsLogger.debug('process:viewCompleted:building');
         _cancelViewWatchTime();
         final overrideStr = attributes?['playheadOverride'];
-        final override =
-            overrideStr == null ? null : int.tryParse(overrideStr);
+        final override = overrideStr == null ? null : int.tryParse(overrideStr);
         try {
           // Sync build — no `await`, no microtask hop. See the doc on
           // ViewCompletedEvent.createViewCompletedEvent for why.
@@ -229,8 +228,7 @@ class FastPixMetrics {
         builtJson = (await ErrorEvent.createErrorEvent()).toJson();
         break;
       case PlayerEvent.requestCompleted:
-        builtJson =
-            (await RequestCompletedEvent.createRequestCompletedEvent(
+        builtJson = (await RequestCompletedEvent.createRequestCompletedEvent(
           requestId: attributes?['requestId'] ?? '',
           requestUrl: attributes?['requestUrl'] ?? '',
           requestMethod: attributes?['requestMethod'] ?? '',
@@ -238,18 +236,17 @@ class FastPixMetrics {
           requestHostName: attributes?['requestHostName'],
           requestCancel: attributes?['requestCancel'],
         ))
-                .toJson();
+            .toJson();
         break;
       case PlayerEvent.requestCanceled:
-        builtJson =
-            (await RequestCancelledEvent.createRequestCancelledEvent(
+        builtJson = (await RequestCancelledEvent.createRequestCancelledEvent(
           requestId: attributes?['requestId'] ?? '',
           requestUrl: attributes?['requestUrl'] ?? '',
           requestMethod: attributes?['requestMethod'] ?? '',
           requestHostName: attributes?['requestHostName'],
           requestCancel: attributes?['requestCancel'],
         ))
-                .toJson();
+            .toJson();
         break;
       case PlayerEvent.requestFailed:
         builtJson = (await RequestFailedEvent.createRequestFailedEvent(

@@ -1,4 +1,3 @@
-import 'package:fastpix_flutter_core_data/src/model/custom_data.dart';
 import 'package:fastpix_flutter_core_data/src/util/device_info_helper.dart';
 import 'package:fastpix_flutter_core_data/src/util/sdk_info.dart';
 import 'package:fastpix_flutter_core_data/src/util/utils.dart';
@@ -196,11 +195,9 @@ class ViewBeginEvent extends BaseEvent {
     final metrixService = ServiceLocator().metricsStateManager;
     configService.updateViewerTimeStamp(configService.currentTimeStamp());
     final customData = configService.customData;
-    final metaData1 = customData?.firstOrNull;
-    final metaData2 = _getMetaData2(customData);
     final baseData = BaseEvent.getBaseEventData(configService);
     final videoData = configService.videoData;
-    final playerObserver = configService.playerObserver;
+    final observer = configService.playerObserver;
     final deviceInfo = await DeviceInfoHelper.getDeviceInfo();
     final packageInfo = SdkInfo.getPackageInformation();
     metrixService.updateViewBeginTime(DateTime.now());
@@ -219,25 +216,25 @@ class ViewBeginEvent extends BaseEvent {
       connectionType: baseData.connectionType,
       viewWatchTime: ViewWatchTimeCounter.viewWatchTime.toString(),
       isPlayerFullScreen: baseData.isPlayerFullScreen,
-      autoPlay: playerObserver?.isPlayerAutoPlayOn().toString(),
+      autoPlay: observer?.isAutoPlay().toString(),
       viewBegin: configService.currentTimeStamp(),
       sessionId: sessionService.sessionId,
       sessionStart: sessionService.sessionStartTime?.toString(),
       sessionExpires: sessionService.sessionExpiryTime?.toString(),
-      videoSourceUrl: playerObserver?.videoSourceUrl() ?? videoData?.videoUrl,
+      videoSourceUrl: observer?.sourceUrl() ?? videoData?.videoSourceUrl,
       fpViewerId: configService.viewerId,
       videoTitle: videoData?.videoTitle,
       videoId:
           videoData?.videoId ?? configService.generateRandomIdOf24Characters(),
       playerName: configService.playerData?.playerName,
       playerVersion: configService.playerData?.playerVersion,
-      playerWidth: playerObserver?.playerWidth().round().toString(),
-      playerHeight: playerObserver?.playerHeight().round().toString(),
+      playerWidth: observer?.playerWidth()?.round().toString(),
+      playerHeight: observer?.playerHeight()?.round().toString(),
       videoHeight: configService.changeTrack?.height == null
-          ? playerObserver?.videoSourceHeight().toString()
+          ? observer?.videoSourceHeight().toString()
           : configService.changeTrack?.height?.toString(),
       videoWidth: configService.changeTrack?.width == null
-          ? playerObserver?.videoSourceWidth().toString()
+          ? observer?.videoSourceWidth().toString()
           : configService.changeTrack?.width?.toString(),
       softwareName: configService.playerData?.playerName,
       softwareVersion: configService.playerData?.playerVersion,
@@ -245,48 +242,40 @@ class ViewBeginEvent extends BaseEvent {
       osVersion: deviceInfo['osVersion'],
       fpSDKName: packageInfo.sdkName,
       fpSDKVersion: packageInfo.sdkVersion,
-      streamType:
-          playerObserver?.isVideoSourceLive() == true ? 'Live' : 'on-demand',
-      videoHostName: Utils.getDomain(videoData?.videoUrl),
-      cm1: metaData1?.value ?? '',
-      cm2: metaData2,
-      cm3: null,
-      cm4: null,
-      cm5: null,
-      cm6: null,
-      cm7: null,
-      cm8: null,
-      cm9: null,
-      cm10: null,
+      streamType: observer?.isLive() == true ? 'live' : 'on-demand',
+      videoHostName:
+          Utils.getDomain(videoData?.videoSourceUrl ?? observer?.sourceUrl()),
+      cm1: customData?.customField1,
+      cm2: customData?.customField2,
+      cm3: customData?.customField3,
+      cm4: customData?.customField4,
+      cm5: customData?.customField5,
+      cm6: customData?.customField6,
+      cm7: customData?.customField7,
+      cm8: customData?.customField8,
+      cm9: customData?.customField9,
+      cm10: customData?.customField10,
       deviceName: deviceInfo['deviceName'],
       deviceModel: deviceInfo['deviceModel'],
       deviceCategory: 'Mobile',
       deviceManufacturer: deviceInfo['deviceManufacturer'],
       viewSessionId: sessionService.sessionId,
-      mimeType: playerObserver?.videoSourceMimeType(),
+      mimeType: observer?.mimeType(),
       fastPixApiVersion: '1.0',
-      videoCodec: null,
-      videoLanguage: null,
-      videoDuration: playerObserver?.videoSourceDuration().toString(),
-      videoThumbnail: videoData?.videoThumbnailUrl,
-      videoSeries: null,
-      videoProducer: null,
-      videoContentType: null,
-      videoVariant: null,
+      videoCodec: configService.changeTrack?.codec ?? observer?.playerCodec(),
+      videoLanguage: videoData?.videoLanguage,
+      videoDuration: observer?.sourceDuration().toString(),
+      videoThumbnail: videoData?.videoThumbnail,
+      videoSeries: videoData?.videoSeries,
+      videoProducer: videoData?.videoProducer,
+      videoContentType: videoData?.videoContentType ?? observer?.mimeType(),
+      videoVariant: videoData?.videoVariant,
       applicationName: null,
       applicationVersion: null,
-      drmType: null,
-      preLoad: null,
-      videoCDN: null,
+      drmType: videoData?.videoDrmType,
+      preLoad: observer?.preLoad().toString(),
+      videoCDN: videoData?.videoCDN,
     );
-  }
-
-  static _getMetaData2(List<CustomData>? customData) {
-    if (customData != null && customData.length >= 2) {
-      return customData[1].value;
-    } else {
-      return '';
-    }
   }
 
   static int? _decrementedViewerTimeStamp(int? value) {

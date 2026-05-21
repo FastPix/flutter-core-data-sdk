@@ -56,9 +56,9 @@ class PlayerReadyEvent extends BaseEvent {
       connectionType: baseData.connectionType,
       isPlayerFullScreen: baseData.isPlayerFullScreen,
       playerInitTime: playerInitTime.toString(),
-      playerWidth: playerObserver?.playerWidth().round(),
-      playerHeight: playerObserver?.playerHeight().round(),
-      videoDuration: playerObserver?.videoSourceDuration().toString(),
+      playerWidth: playerObserver?.playerWidth()?.round(),
+      playerHeight: playerObserver?.playerHeight()?.round(),
+      videoDuration: playerObserver?.sourceDuration().toString(),
     );
   }
 }

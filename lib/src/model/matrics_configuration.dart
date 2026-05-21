@@ -7,7 +7,7 @@ class MetricsConfiguration {
   final String? viewerId;
   final VideoData? videoData;
   final bool enableLogging;
-  final List<CustomData>? customData;
+  final CustomData? customData;
 
   MetricsConfiguration._builder(MetricsBuilder builder)
       : playerData = builder._playerData,
@@ -35,7 +35,7 @@ class MetricsBuilder {
   VideoData? _videoData;
   bool _enableLogging = false;
   String? _viewerId;
-  List<CustomData>? _customData;
+  CustomData? _customData;
 
   MetricsBuilder setPlayerData(PlayerData playerData) {
     _playerData = playerData;
@@ -47,7 +47,7 @@ class MetricsBuilder {
     return this;
   }
 
-  MetricsBuilder setCustomData(List<CustomData> customData) {
+  MetricsBuilder setCustomData(CustomData customData) {
     _customData = customData;
     return this;
   }

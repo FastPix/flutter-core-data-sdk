@@ -1,43 +1,49 @@
 import 'package:fastpix_flutter_core_data/src/model/error_model.dart';
 
-mixin PlayerObserver {
-  ErrorModel? getPlayerError();
+abstract interface class PlayerObserver {
+  int? playerHeight();
 
-  bool isPlayerFullScreen();
+  int? playerWidth();
 
-  bool isPlayerPaused();
+  int? videoSourceWidth();
 
-  bool isPlayerAutoPlayOn();
+  int? videoSourceHeight();
 
-  double playerWidth();
+  int? playHeadTime();
 
-  double playerHeight();
+  String? mimeType();
 
-  String playerLanguageCode();
+  int? sourceFps();
 
-  bool playerPreLoadOn();
+  String? sourceAdvertisedBitrate();
 
-  String videoThumbnailUrl();
+  int? sourceAdvertiseFrameRate();
 
-  String videoSourceUrl();
+  int? sourceDuration();
 
-  String videoSourceMimeType();
+  bool? isPause();
 
-  int videoSourceDuration();
+  bool? isAutoPlay();
 
-  bool isVideoSourceLive();
+  bool? preLoad();
 
-  int videoSourceHeight();
+  bool? isBuffering();
 
-  int videoSourceWidth();
+  String? playerCodec();
 
-  /// Returns the player's current playhead position in milliseconds.
-  ///
-  /// Must be synchronous and non-blocking. Hosts should subscribe to their
-  /// player's position stream (e.g. BetterPlayer's `position` poller) and
-  /// cache the latest value in a field; this method just returns the cached
-  /// `int`. Returning a slightly-stale value is fine — the SDK calls this
-  /// at event-submission time and never awaits it. If no position is known
-  /// yet, return `0`.
-  int playerPlayHeadTime();
+  String? sourceHostName();
+
+  bool? isLive();
+
+  String? sourceUrl();
+
+  bool? isFullScreen();
+
+  ErrorModel getPlayerError();
+
+  String? getVideoCodec();
+
+  String? getSoftwareName();
+
+  String? getSoftwareVersion();
 }

@@ -81,11 +81,11 @@ class PulseEvent extends BaseEvent {
     final baseData = BaseEvent.getBaseEventData(configService);
     configService.collectDataForScaling();
     final tracker = ScalingTracker.instance;
-    final isFullScreen = configService.playerObserver?.isPlayerFullScreen();
+    final isFullScreen = configService.playerObserver?.isFullScreen();
     if (isFullScreen == true) {
       metrix.updatePlayerOrientationChange();
     }
-    final playerObserver = configService.playerObserver;
+    final observer = configService.playerObserver;
     final videoData = configService.videoData;
     final bufferFrequency = metrix.getRebufferFrequency();
     return PulseEvent(
@@ -103,22 +103,22 @@ class PulseEvent extends BaseEvent {
       viewRebufferDuration: metrix.viewRebufferDuration.toString(),
       viewBufferPercentage: metrix.viewRebufferPercentage.toString(),
       viewBufferFrequency: bufferFrequency.toString(),
-      playerWidth: playerObserver?.playerWidth().round().toString(),
-      playerHeight: playerObserver?.playerHeight().round().toString(),
+      playerWidth: observer?.playerWidth()?.round().toString(),
+      playerHeight: observer?.playerHeight()?.round().toString(),
       videoHeight: configService.changeTrack?.height == null
-          ? playerObserver?.videoSourceHeight().toString()
+          ? observer?.videoSourceHeight().toString()
           : configService.changeTrack?.height?.toString(),
       videoWidth: configService.changeTrack?.width == null
-          ? playerObserver?.videoSourceWidth().toString()
+          ? observer?.videoSourceWidth().toString()
           : configService.changeTrack?.width?.toString(),
-      videoDuration: playerObserver?.videoSourceDuration().toString(),
+      videoDuration: observer?.sourceDuration().toString(),
       viewTotalContentPlayBackTime: tracker.totalPlaybackTime.toString(),
       viewMaxUpScalePercentage: tracker.currentMaxUpscale,
       viewMaxDownScalePercentage: tracker.currentMaxDownscale,
       viewTotalUpScaling: tracker.totalUpscalingTimeWeighted,
       viewTotalDownScaling: tracker.totalDownscalingTimeWeighted,
-      videoSourceUrl: videoData?.videoUrl,
-      videoHostName: Utils.getDomain(videoData?.videoUrl),
+      videoSourceUrl: videoData?.videoSourceUrl,
+      videoHostName: Utils.getDomain(videoData?.videoSourceUrl),
       videoCDN: null,
     );
   }

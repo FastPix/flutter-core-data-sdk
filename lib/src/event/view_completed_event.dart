@@ -81,7 +81,7 @@ class ViewCompletedEvent extends BaseEvent {
     final configService = ServiceLocator().configurationService;
     final baseData = BaseEvent.getBaseEventData(configService);
     final metrix = ServiceLocator().metricsStateManager;
-    final playerObserver = configService.playerObserver;
+    final observer = configService.playerObserver;
     configService.calculateScalingForCurrentInterval(
       playheadOverride: playheadOverride,
     );
@@ -108,14 +108,14 @@ class ViewCompletedEvent extends BaseEvent {
       viewRebufferDuration: metrix.viewRebufferDuration.toString(),
       viewBufferPercentage: metrix.viewRebufferPercentage.toString(),
       viewBufferFrequency: bufferFrequency.toString(),
-      videoDuration: playerObserver?.videoSourceDuration().toString(),
-      playerWidth: playerObserver?.playerWidth().round().toString(),
-      playerHeight: playerObserver?.playerHeight().round().toString(),
+      videoDuration: observer?.sourceDuration().toString(),
+      playerWidth: observer?.playerWidth()?.round().toString(),
+      playerHeight: observer?.playerHeight()?.round().toString(),
       videoWidth: configService.changeTrack?.width == null
-          ? playerObserver?.videoSourceWidth().toString()
+          ? observer?.videoSourceWidth().toString()
           : configService.changeTrack?.width?.toString(),
       videoHeight: configService.changeTrack?.height == null
-          ? playerObserver?.videoSourceHeight().toString()
+          ? observer?.videoSourceHeight().toString()
           : configService.changeTrack?.height?.toString(),
     );
   }

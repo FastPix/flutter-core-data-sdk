@@ -61,7 +61,7 @@ abstract class BaseEvent {
       viewSequenceNumber: configService.incrementViewSequenceCounter(),
       playerSequenceNumber: configService.incrementPlayerSequenceCounter(),
       beaconDomain: configService.beaconUrl,
-      playheadTime: playerObserver?.playerPlayHeadTime(),
+      playheadTime: playerObserver?.playHeadTime(),
       viewerTimeStamp: configService.currentTimeStamp(),
       playerInstanceId: configService.playerId,
       viewWatchTime: ViewWatchTimeCounter.viewWatchTime.toString(),
@@ -70,7 +70,7 @@ abstract class BaseEvent {
       // it from cache here avoids a system call on every event.
       connectionType: configService.state.connectionType,
       eventName: '',
-      isPlayerFullScreen: playerObserver?.isPlayerFullScreen().toString(),
+      isPlayerFullScreen: playerObserver?.isFullScreen().toString(),
     );
   }
 }
