@@ -49,10 +49,25 @@ class VariantChangedEvent extends BaseEvent {
     final observer = configService.playerObserver;
     final videoId = configService.videoData?.videoId ??
         configService.generateRandomIdOf24Characters();
-    final frameRateString = configService.changeTrack?.frameRate;
-    final frameRateInt = frameRateString == null
-        ? null
-        : int.tryParse(frameRateString);
+    final track = configService.changeTrack;
+
+    // Treat null AND empty strings as missing. BetterPlayer's HLS parser
+    // populates frameRate/codec/mimeType as 0/'' on the init defaultTrack
+    // dispatch, which would otherwise mask the observer fallback.
+    String? coalesce(String? trackValue, String? observerValue) {
+      if (trackValue != null && trackValue.isNotEmpty && trackValue != '0') {
+        return trackValue;
+      }
+      return observerValue;
+    }
+
+    final frameRateFromTrack = track?.frameRate;
+    final frameRateInt =
+        (frameRateFromTrack != null && frameRateFromTrack.isNotEmpty
+                ? int.tryParse(frameRateFromTrack)
+                : null) ??
+            observer?.sourceAdvertiseFrameRate();
+
     return VariantChangedEvent(
       workSpaceId: baseData.workSpaceId,
       viewId: baseData.viewId,
@@ -65,15 +80,13 @@ class VariantChangedEvent extends BaseEvent {
       viewWatchTime: baseData.viewWatchTime,
       connectionType: baseData.connectionType,
       isPlayerFullScreen: baseData.isPlayerFullScreen,
-      videoSourceHeight: configService.changeTrack?.height == null
-          ? observer?.videoSourceHeight().toString()
-          : configService.changeTrack?.height?.toString(),
-      videoSourceWidth: configService.changeTrack?.width == null
-          ? observer?.videoSourceWidth().toString()
-          : configService.changeTrack?.width?.toString(),
+      videoSourceHeight:
+          coalesce(track?.height, observer?.videoSourceHeight()?.toString()),
+      videoSourceWidth:
+          coalesce(track?.width, observer?.videoSourceWidth()?.toString()),
       frameRate: frameRateInt,
-      mimeType: configService.changeTrack?.mimeType,
-      bitrate: configService.changeTrack?.bitrate,
+      mimeType: coalesce(track?.mimeType, observer?.mimeType()),
+      bitrate: coalesce(track?.bitrate, observer?.sourceAdvertisedBitrate()),
       videoId: videoId,
     );
   }

@@ -383,12 +383,6 @@ class FastPixBaseBetterPlayer implements PlayerObserver {
     final frameRate = event.parameters?['frameRate'];
     final codec = event.parameters?['codecs'];
     final mimeType = event.parameters?['mimeType'];
-    debugPrint("Video Width ===================> $paramWidth");
-    debugPrint("Video Height ===================> $paramHeight");
-    debugPrint("Video BitRate ===================> $bitRate");
-    debugPrint("Video FrameRate ===================> $frameRate");
-    debugPrint("Video Codec ===================> $codec");
-    debugPrint("Video MimeType ===================> $mimeType");
     final Map<String, String> attributes = {};
     attributes['width'] =
         (paramWidth ??
