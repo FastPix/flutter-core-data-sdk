@@ -18,7 +18,7 @@ Add the following dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  flutter_core_sdk: ^1.0.2
+  fastpix_flutter_core_data: ^2.0.0
 ```
 
 Then run:
@@ -29,55 +29,66 @@ flutter pub get
 
 ## Quick Start
 
-Here's a minimal example to get you started:
+`FastPixMetrics` now requires a `PlayerObserver` implementation that exposes real-time state from your video player. The SDK reads from the observer synchronously when building events, so all of its getters must return cached/immediate values.
 
 ```dart
 import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
 
-void main() {
-  // Configure the SDK
-  final metrics = FastPixMetrics.builder()
-    .setWorkSpaceId('your-workspace-id')
-    .setBeaconUrl('https://your-beacon-url.com')
-    .setViewerId('user-123')
-    .build();
+final metrics = FastPixMetricsBuilder()
+  .setPlayerObserver(myPlayerObserver) // your impl of PlayerObserver
+  .setMetricsConfiguration(MetricsConfiguration(
+    workspaceId: 'your-workspace-id',
+    beaconUrl: 'https://your-beacon-url.com',
+    viewerId: 'user-123',
+    videoData: VideoData(
+      videoId: 'movie-42',
+      videoTitle: 'Trailer',
+      videoSourceUrl: 'https://stream.example.com/movie.m3u8',
+    ),
+  ))
+  .build();
 
-  // Track player events - only dispatch play event
-  // SDK automatically handles viewBegin and playerReady internally
-  metrics.dispatchEvent(PlayerEvent.play);
-}
+// Dispatch player events as they happen. The SDK serializes them in
+// submission order and persists them to a SQLite-backed queue.
+metrics.dispatchEvent(PlayerEvent.playerReady);
+metrics.dispatchEvent(PlayerEvent.viewBegin);
+metrics.dispatchEvent(PlayerEvent.play);
 ```
+
+See the [example app](example/) for a full BetterPlayer integration including a reference `PlayerObserver` implementation.
 
 ## Usage / API Reference
 
 ### Core Classes
 
 #### FastPixMetrics
-The main entry point for the SDK. Handles event dispatching and configuration management.
+The main entry point for the SDK. Built via `FastPixMetricsBuilder`.
 
 ```dart
 class FastPixMetrics {
-  // Dispatch player events
-  // Note: Only dispatch play event - SDK automatically handles viewBegin and playerReady
+  // Dispatch any player event. Optional `attributes` map is currently used
+  // by `variantChanged` to populate ChangeTrack (width, height, bitrate,
+  // frameRate, codecs, mimeType).
   Future<void> dispatchEvent(PlayerEvent event, {Map<String, String>? attributes});
-  
-  // Get current player observer
-  PlayerObserver get playerObserver;
+
+  // Flush pending events and finalize the view. Pass `playheadOverride`
+  // to record a final playhead value when the player is being torn down.
+  Future<void> dispose(bool emitViewCompleted, {int? playheadOverride});
 }
 ```
 
 #### MetricsConfiguration
-Configuration class for setting up the SDK with required parameters.
+Configuration object passed to `FastPixMetricsBuilder.setMetricsConfiguration(...)`.
 
 ```dart
 class MetricsConfiguration {
   final PlayerData? playerData;
-  final String? workspaceId;
-  final String? beaconUrl;
-  final String? viewerId;
+  final String? workspaceId;   // required
+  final String? beaconUrl;     // required
+  final String? viewerId;      // required
   final VideoData? videoData;
   final bool enableLogging;
-  final List<CustomData>? customData;
+  final CustomData? customData;
 }
 ```
 
@@ -101,19 +112,172 @@ Enumeration of all supported video player events:
 
 ### Builder Pattern
 
-The SDK uses a builder pattern for easy configuration:
-
 ```dart
-final metrics = FastPixMetrics.builder()
-  .setWorkSpaceId('workspace-123')
-  .setBeaconUrl('https://analytics.example.com')
-  .setViewerId('user-456')
-  .setPlayerData(playerData)
-  .setVideoData(videoData)
-  .setCustomData(customDataList)
-  .isEnableLogging(true)
+final metrics = FastPixMetricsBuilder()
+  .setPlayerObserver(myPlayerObserver)
+  .setMetricsConfiguration(MetricsConfiguration(
+    workspaceId: 'workspace-123',
+    beaconUrl: 'https://analytics.example.com',
+    viewerId: 'user-456',
+    playerData: playerData,
+    videoData: videoData,
+    customData: customData,
+    enableLogging: true,
+  ))
   .build();
 ```
+
+> **Breaking change in 2.0.0**: the per-field setter style (`setWorkSpaceId`, `setBeaconUrl`, etc.) on `FastPixMetrics.builder()` has been replaced. See [CHANGELOG.md](CHANGELOG.md) for the full migration guide.
+
+### PlayerObserver
+
+`PlayerObserver` is the synchronous bridge between your video player and the SDK. The SDK calls these getters when building each event, so every method must return immediately — never await a platform channel inside an override. Host an internal cache (poll the player at a 250 ms cadence) and serve it from these getters.
+
+```dart
+abstract interface class PlayerObserver {
+  int? playerHeight();
+  int? playerWidth();
+  int? videoSourceWidth();
+  int? videoSourceHeight();
+  int? playHeadTime();
+  String? mimeType();
+  int? sourceFps();
+  String? sourceAdvertisedBitrate();
+  int? sourceAdvertiseFrameRate();
+  int? sourceDuration();
+  bool? isPause();
+  bool? isAutoPlay();
+  bool? preLoad();
+  bool? isBuffering();
+  String? playerCodec();
+  String? sourceHostName();
+  bool? isLive();
+  String? sourceUrl();
+  bool? isFullScreen();
+  ErrorModel getPlayerError();
+  String? getVideoCodec();
+  String? getSoftwareName();
+  String? getSoftwareVersion();
+}
+```
+
+A reference BetterPlayer-backed implementation lives in [example/lib/fastpix_data_better_player.dart](example/lib/fastpix_data_better_player.dart).
+
+#### Reporting player size (`playerWidth` / `playerHeight`)
+
+Flutter players don't expose their on-screen dimensions through their controllers — those values live on the *widget tree*. The SDK therefore can't pull them for you. Your `PlayerObserver` implementation has to measure the player widget itself and cache the result; `playerWidth()` / `playerHeight()` then return that cache.
+
+The reference impl uses a `GlobalKey` attached to the player widget, reads the `RenderBox` size after the first frame, and updates the cache on layout changes:
+
+```dart
+class MyPlayerObserver implements PlayerObserver {
+  double _playerWidth = 0;
+  double _playerHeight = 0;
+  GlobalKey _playerKey = GlobalKey();
+
+  // Call this from your widget once, passing the key you attached to the
+  // player widget (see usage below).
+  void reportPlayerSize(GlobalKey key) {
+    _playerKey = key;
+    _measure();
+  }
+
+  void _measure() {
+    void read() {
+      final ctx = _playerKey.currentContext;
+      final box = ctx?.findRenderObject() as RenderBox?;
+      if (box != null && box.hasSize && box.size.width > 0) {
+        _playerWidth = box.size.width;
+        _playerHeight = box.size.height;
+        return;
+      }
+      // Layout hasn't settled yet — retry next frame.
+      WidgetsBinding.instance.addPostFrameCallback((_) => read());
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => read());
+  }
+
+  @override
+  int? playerWidth()  => _playerWidth  > 0 ? _playerWidth.toInt()  : null;
+  @override
+  int? playerHeight() => _playerHeight > 0 ? _playerHeight.toInt() : null;
+  // ...remaining overrides
+}
+```
+
+Then in your widget, declare a `GlobalKey` on your State, attach it to the player widget, and hand the same key to the observer **after** you've built the metrics object but **before** dispatching the first event. This mirrors the example app exactly — see [example/lib/main.dart](example/lib/main.dart):
+
+```dart
+class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
+  late BetterPlayerController _betterPlayerController;
+  late FastPixBaseBetterPlayer _fastPixPlayer;
+  final GlobalKey _playerKey = GlobalKey(); // 1. declare on the State
+
+  @override
+  void initState() {
+    super.initState();
+    _initializePlayer();
+  }
+
+  void _initializePlayer() {
+    _betterPlayerController = BetterPlayerController(
+      BetterPlayerConfiguration(autoPlay: true, looping: false),
+      betterPlayerDataSource: BetterPlayerDataSource(
+        BetterPlayerDataSourceType.network,
+        widget.video.url,
+        videoFormat: BetterPlayerVideoFormat.hls,
+        useAsmsTracks: true,
+      ),
+    );
+
+    _fastPixPlayer = FastPixBaseVideoPlayerBuilder(
+      playerController: _betterPlayerController,
+      workspaceId: 'your-workspace-id',
+      viewerId: Uuid().v4(),
+    )
+      .setVideoData(VideoData(
+        videoId: widget.video.id,
+        videoSourceUrl: widget.video.url,
+        videoTitle: 'video-title',
+      ))
+      .setPlayerData(PlayerData('better_player', '1.0.8'))
+      .setEnabledLogging(true)
+      .build();
+
+    // 2. hand the key to the observer AFTER build, BEFORE start
+    _fastPixPlayer.reportPlayerSize(_playerKey);
+    _fastPixPlayer.start();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Playing: ${widget.video.id}')),
+      body: Column(
+        children: [
+          AspectRatio(
+            aspectRatio: 16 / 9,
+            // 3. attach the same key to the player widget itself —
+            //    its RenderBox is what gets measured.
+            child: BetterPlayer(
+              key: _playerKey,
+              controller: _betterPlayerController,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _fastPixPlayer.disposeMetrix(); // flushes and tears down the SDK
+    super.dispose();
+  }
+}
+```
+
+If you skip this wiring, `playerWidth()` / `playerHeight()` will return `null` and the corresponding analytics fields will not be reported.
 
 ## Configuration
 
@@ -152,62 +316,77 @@ class VideoPlayerWidget extends StatefulWidget {
 
 class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   late FastPixMetrics metrics;
-  
+  late MyPlayerObserver observer; // your impl of PlayerObserver
+
   @override
   void initState() {
     super.initState();
-    
-    // Initialize SDK
-    metrics = FastPixMetrics.builder()
-      .setWorkSpaceId('video-app-123')
-      .setBeaconUrl('https://analytics.videoapp.com')
-      .setViewerId('user-${DateTime.now().millisecondsSinceEpoch}')
+    observer = MyPlayerObserver(/* hand it your player controller */);
+
+    metrics = FastPixMetricsBuilder()
+      .setPlayerObserver(observer)
+      .setMetricsConfiguration(MetricsConfiguration(
+        workspaceId: 'video-app-123',
+        beaconUrl: 'https://analytics.videoapp.com',
+        viewerId: 'user-${DateTime.now().millisecondsSinceEpoch}',
+        videoData: VideoData(
+          videoId: 'movie-42',
+          videoSourceUrl: 'https://stream.example.com/movie.m3u8',
+        ),
+      ))
       .build();
-      
-    // Note: No need to dispatch playerReady or viewBegin events
-    // SDK handles these automatically when play event is dispatched
+
+    metrics.dispatchEvent(PlayerEvent.playerReady);
+    metrics.dispatchEvent(PlayerEvent.viewBegin);
   }
-  
-  void onPlay() {
-    // Only dispatch play event - SDK automatically handles viewBegin and playerReady
-    metrics.dispatchEvent(PlayerEvent.play);
-  }
-  
-  void onPause() {
-    metrics.dispatchEvent(PlayerEvent.pause);
-  }
-  
-  void onSeek(Duration position) {
-    metrics.dispatchEvent(PlayerEvent.seeking);
-    // After seek completes
-    metrics.dispatchEvent(PlayerEvent.seeked);
+
+  void onPlay()  => metrics.dispatchEvent(PlayerEvent.play);
+  void onPause() => metrics.dispatchEvent(PlayerEvent.pause);
+
+  void onSeekStart() => metrics.dispatchEvent(PlayerEvent.seeking);
+  void onSeekEnd()   => metrics.dispatchEvent(PlayerEvent.seeked);
+
+  @override
+  void dispose() {
+    // Flushes pending events and emits viewCompleted.
+    metrics.dispose(true, playheadOverride: observer.playHeadTime());
+    super.dispose();
   }
 }
 ```
 
 ### Custom Data Integration
 
-```dart
-// Create custom data fields
-final customData = [
-  CustomData(value: 'movie'),
-  CustomData(value: 'action'),
-  CustomData(value: '2024'),
-];
+`CustomData` now holds up to 10 named fields on a single object (was a `List<CustomData>` in 1.x).
 
-// Configure SDK with custom data
-final metrics = FastPixMetrics.builder()
-  .setWorkSpaceId('workspace-123')
-  .setBeaconUrl('https://beacon.example.com')
-  .setViewerId('user-789')
-  .setCustomData(customData)
+```dart
+final customData = CustomData(
+  'movie',   // customField1
+  'action',  // customField2
+  '2026',    // customField3
+  null, null, null, null, null, null, null,
+);
+
+final metrics = FastPixMetricsBuilder()
+  .setPlayerObserver(observer)
+  .setMetricsConfiguration(MetricsConfiguration(
+    workspaceId: 'workspace-123',
+    beaconUrl: 'https://beacon.example.com',
+    viewerId: 'user-789',
+    customData: customData,
+  ))
   .build();
 ```
 
 ### Advanced Event Tracking
 
 ```dart
-// Track events with additional attributes
+// Track events with additional attributes. The `variantChanged` event
+// reads these and persists them as ChangeTrack; subsequent events
+// (pulse, play, error, viewBegin, etc.) will pick them up.
+//
+// If any of these are missing or set to '0'/empty string, the SDK falls
+// back to the corresponding PlayerObserver getter (new in 2.0.0).
 await metrics.dispatchEvent(
   PlayerEvent.variantChanged,
   attributes: {

@@ -38,7 +38,7 @@ Open [lib/main.dart](lib/main.dart) and replace the placeholders inside
 
 ```dart
 .setWorkSpaceId('your-workspace-id')
-.setBeaconUrl('https://metrix.ws.fastpix.io/v1/metrix')
+.setBeaconUrl('beacon-url')
 .setViewerId('viewer-...')
 ```
 
