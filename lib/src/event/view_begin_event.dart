@@ -236,8 +236,8 @@ class ViewBeginEvent extends BaseEvent {
       videoWidth: configService.changeTrack?.width == null
           ? observer?.videoSourceWidth().toString()
           : configService.changeTrack?.width?.toString(),
-      softwareName: configService.playerData?.playerName,
-      softwareVersion: configService.playerData?.playerVersion,
+      softwareName: observer?.getSoftwareName(),
+      softwareVersion: observer?.getSoftwareVersion(),
       osName: deviceInfo['osName'],
       osVersion: deviceInfo['osVersion'],
       fpSDKName: packageInfo.sdkName,

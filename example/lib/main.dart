@@ -29,6 +29,7 @@ class FastPixExampleApp extends StatelessWidget {
 class DummyVideo {
   final String id;
   final String url;
+
   const DummyVideo(this.id, this.url);
 }
 
@@ -129,6 +130,7 @@ class VideoPlayerScreen extends StatefulWidget {
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   late BetterPlayerController _betterPlayerController;
   late FastPixBaseBetterPlayer _fastPixPlayer;
+  final GlobalKey _playerKey = GlobalKey();
 
   @override
   void initState() {
@@ -149,12 +151,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       ),
     );
 
-    _fastPixPlayer = FastPixBaseVideoPlayerBuilder(
-      playerController: _betterPlayerController,
-      workspaceId: '1109888358169935873',
-      viewerId: Uuid().v4(),
-    )
-        .setVideoData(
+    _fastPixPlayer =
+        FastPixBaseVideoPlayerBuilder(
+          playerController: _betterPlayerController,
+          workspaceId: '1109888358169935873',
+          viewerId: Uuid().v4(),
+        )
+            .setVideoData(
           VideoData(
             videoId: widget.video.id,
             videoLanguage: "video-language",
@@ -165,12 +168,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
             videoDrmType: "video-drm-type",
             videoProducer: "video-producer",
             videoSeries: "video-series",
-            videoVariant: "video-variant"
+            videoVariant: "video-variant",
           ),
         )
-        .setEnabledLogging(true)
-        .build();
-
+            .setPlayerData(PlayerData("better_player", "1.0.8"))
+            .setEnabledLogging(true)
+            .build();
+    _fastPixPlayer.reportPlayerSize(_playerKey);
     _fastPixPlayer.start();
   }
 
@@ -182,7 +186,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         children: [
           AspectRatio(
             aspectRatio: 16 / 9,
-            child: BetterPlayer(controller: _betterPlayerController),
+            child: BetterPlayer(
+                key: _playerKey,
+                controller: _betterPlayerController),
           ),
         ],
       ),

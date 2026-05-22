@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:better_player_plus/better_player_plus.dart';
 import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
+import 'package:fastpix_flutter_core_data_example/library_info.dart';
 import 'package:fastpix_flutter_core_data_example/valid_events.dart';
 import 'package:flutter/material.dart';
 
@@ -173,7 +174,7 @@ class FastPixBaseBetterPlayer implements PlayerObserver {
                   viewerId: viewerId,
                   videoData: videoData,
                   enableLogging: true,
-                  playerData: playerData,
+                  playerData: playerData ?? PlayerData("better_player", playerController.betterPlayerConfiguration.aspectRatio.toString()),
                   customData: customData,
                 ),
               )
@@ -382,6 +383,12 @@ class FastPixBaseBetterPlayer implements PlayerObserver {
     final frameRate = event.parameters?['frameRate'];
     final codec = event.parameters?['codecs'];
     final mimeType = event.parameters?['mimeType'];
+    debugPrint("Video Width ===================> $paramWidth");
+    debugPrint("Video Height ===================> $paramHeight");
+    debugPrint("Video BitRate ===================> $bitRate");
+    debugPrint("Video FrameRate ===================> $frameRate");
+    debugPrint("Video Codec ===================> $codec");
+    debugPrint("Video MimeType ===================> $mimeType");
     final Map<String, String> attributes = {};
     attributes['width'] =
         (paramWidth ??
@@ -425,6 +432,8 @@ class FastPixBaseBetterPlayer implements PlayerObserver {
           playerHeightSize = renderBox.size.height;
           playerWidthSize = renderBox.size.width;
           _isPlayerResolutionCalculationDone = true;
+          debugPrint("=====================> Player Height $playerHeightSize}");
+          debugPrint("=====================> Player Width $playerWidthSize}");
           return;
         }
       }
@@ -481,6 +490,7 @@ class FastPixBaseBetterPlayer implements PlayerObserver {
   @override
   int? playHeadTime() => _lastKnownPlayheadMs;
 
+  @override
   String? mimeType() {
     final trackMime = _activeTrack?.mimeType;
     if (trackMime != null && trackMime.isNotEmpty) return trackMime;
@@ -553,10 +563,10 @@ class FastPixBaseBetterPlayer implements PlayerObserver {
   String? getVideoCodec() => playerCodec();
 
   @override
-  String? getSoftwareName() => 'better_player_plus';
+  String? getSoftwareName() => LibraryInfo.libraryName;
 
   @override
-  String? getSoftwareVersion() => '1.0.8';
+  String? getSoftwareVersion() => LibraryInfo.libraryVersion;
 }
 
 class FastPixBaseVideoPlayerBuilder {
