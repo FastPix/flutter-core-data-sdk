@@ -154,7 +154,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _fastPixPlayer =
         FastPixBaseVideoPlayerBuilder(
           playerController: _betterPlayerController,
-          workspaceId: '1109888358169935873',
+          workspaceId: 'workspace-id',
           viewerId: Uuid().v4(),
         )
             .setVideoData(
