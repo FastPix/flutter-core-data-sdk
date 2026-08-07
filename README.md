@@ -18,7 +18,7 @@ Add the following dependency to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  fastpix_resumable_uploader: ^2.0.0
+  fastpix_flutter_core_data: ^2.0.0
 ```
 
 Then run:
