@@ -39,3 +39,6 @@ Thumbs.db
 # If publishing to pub.dev, you might also want to ignore example build artifacts
 example/.dart_tool/
 example/build/
+
+.flutter-plugins
+.flutter-plugins-dependencies

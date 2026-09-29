@@ -5,6 +5,7 @@ import 'package:better_player_plus/better_player_plus.dart';
 import 'package:fastpix_flutter_core_data/fastpix_flutter_core_data.dart';
 import 'package:fastpix_flutter_core_data_example/library_info.dart';
 import 'package:fastpix_flutter_core_data_example/valid_events.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class FastPixBaseBetterPlayer implements PlayerObserver {
@@ -184,7 +185,9 @@ class FastPixBaseBetterPlayer implements PlayerObserver {
       fastPixMetrics.dispatchEvent(PlayerEvent.playerReady);
       fastPixMetrics.dispatchEvent(PlayerEvent.viewBegin);
     } catch (e) {
-      print('Error starting FastPix metrics: $e');
+      if(kDebugMode){
+        print('Error starting FastPix metrics: $e');
+      }
       rethrow;
     }
   }

@@ -14,6 +14,7 @@ dependencies:
   fastpix_flutter_core_data:
     path: ../
   better_player_plus: ^1.0.8
+  uuid: ^4.6.0
 
 dev_dependencies:
   flutter_test:
