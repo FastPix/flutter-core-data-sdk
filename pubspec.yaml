@@ -10,7 +10,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  device_info_plus: ^11.4.0
+  device_info_plus: ^13.2.0
   flutter:
     sdk: flutter
   http: ^1.4.0
@@ -21,6 +21,7 @@ dependencies:
   better_player_plus: ^1.0.8
   sqflite: ^2.3.0
   path: ^1.9.0
+  package_info_plus: ^10.2.1
 
 dev_dependencies:
   lints: ^5.0.0

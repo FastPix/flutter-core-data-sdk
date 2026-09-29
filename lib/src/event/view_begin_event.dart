@@ -270,7 +270,7 @@ class ViewBeginEvent extends BaseEvent {
       videoProducer: videoData?.videoProducer,
       videoContentType: videoData?.videoContentType ?? observer?.mimeType(),
       videoVariant: videoData?.videoVariant,
-      applicationName: null,
+      applicationName: deviceInfo['packageName'],
       applicationVersion: null,
       drmType: videoData?.videoDrmType,
       preLoad: observer?.preLoad().toString(),
