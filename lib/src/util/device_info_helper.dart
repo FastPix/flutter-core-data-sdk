@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 enum DeviceType { phone, tablet, unknown }
 
@@ -7,6 +8,7 @@ class DeviceInfoHelper {
   static final DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
 
   static Future<Map<String, dynamic>> getDeviceInfo() async {
+    final packageInfo = await PackageInfo.fromPlatform();
     final Map<String, dynamic> info = {
       'osName': Platform.isAndroid ? 'Android' : 'iOS',
       'osVersion': '',
@@ -14,6 +16,7 @@ class DeviceInfoHelper {
       'deviceModel': '',
       'deviceName': '',
       'deviceType': DeviceType.unknown.name,
+      'packageName': packageInfo.packageName
     };
 
     if (Platform.isAndroid) {

@@ -426,8 +426,6 @@ class FastPixBaseBetterPlayer implements PlayerObserver {
           playerHeightSize = renderBox.size.height;
           playerWidthSize = renderBox.size.width;
           _isPlayerResolutionCalculationDone = true;
-          debugPrint("=====================> Player Height $playerHeightSize}");
-          debugPrint("=====================> Player Width $playerWidthSize}");
           return;
         }
       }

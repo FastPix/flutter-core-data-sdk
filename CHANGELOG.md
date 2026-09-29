@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2026-09-29
+
+### Fixed
+- `viewBegin` event now populates the browser name (`br`) field with the host app's package name / bundle identifier; it was previously always empty.
+
+### Added
+- `package_info_plus` (`^10.2.1`) dependency, used to resolve the host app's package name.
+
+### Changed
+- Bumped `device_info_plus` from `^11.4.0` to `^13.2.0`.
+- Analyzer now excludes `build/` and platform directories (`android/`, `ios/`, `web/`, `windows/`, `macos/`, `linux/`).
+- Example app: upgraded Android Gradle Plugin to 8.11.1, Kotlin to 2.2.20, and Gradle wrapper to 8.14.3; removed leftover debug logging from the BetterPlayer integration.
+
 ## [2.0.0] - 2026-05-22
 
 A major release with significant architectural changes. **This release contains breaking API changes** — see the *Breaking Changes* section below for the migration steps.
